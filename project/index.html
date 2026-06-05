@@ -1,0 +1,3054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAZAAR — Indian Equity Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050B18;--surface:#0B1629;--card:#0F1D36;--raised:#162840;--hover:#1A3050;
+  --border:#192E4A;--border2:#213D60;
+  --accent:#4070FF;--accent-d:rgba(64,112,255,.14);--accent-h:#5585FF;
+  --green:#00D48C;--green-d:rgba(0,212,140,.12);
+  --red:#FF3F5E;--red-d:rgba(255,63,94,.12);
+  --yellow:#FFB700;--yellow-d:rgba(255,183,0,.12);
+  --t1:#DDE8F8;--t2:#7090B8;--t3:#364F6B;
+  --f-head:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'DM Sans',system-ui,sans-serif;
+  --f-mono:'Space Mono','Courier New',monospace;
+  --r1:5px;--r2:9px;--r3:14px;
+}
+html,body,#root{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--t1);font-family:var(--f-body);font-size:13.5px;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── Keyframes ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes shimmer{0%{background-position:-500px 0}100%{background-position:500px 0}}
+@keyframes flashG{0%,100%{background:transparent}50%{background:rgba(0,212,140,.18)}}
+@keyframes flashR{0%,100%{background:transparent}50%{background:rgba(255,63,94,.18)}}
+.fade-up{animation:fadeUp .3s ease forwards}
+.pulse{animation:pulse 2s ease-in-out infinite}
+
+/* ── App shell ── */
+#app{display:flex;height:100%;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:220px;min-width:220px;height:100%;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-logo{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.logo-mark{
+  font-family:var(--f-head);font-size:20px;font-weight:700;
+  color:var(--t1);letter-spacing:-.3px;display:flex;align-items:center;gap:8px;
+}
+.logo-icon{
+  width:28px;height:28px;background:var(--accent);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.logo-sub{font-size:10.5px;color:var(--t3);margin-top:2px;letter-spacing:.5px}
+.market-status{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:600;
+  background:var(--green-d);color:var(--green);
+}
+.market-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+.sidebar-nav{flex:1;padding:10px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:var(--r1);
+  font-size:13px;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .13s;border:none;background:transparent;
+  font-family:var(--f-body);text-align:left;width:100%;
+}
+.nav-item:hover{color:var(--t1);background:var(--raised)}
+.nav-item.active{color:var(--accent);background:var(--accent-d);font-weight:600}
+.nav-item svg{opacity:.7;flex-shrink:0}
+.nav-item.active svg{opacity:1}
+.nav-badge{
+  margin-left:auto;min-width:18px;height:18px;
+  background:var(--accent-d);color:var(--accent);
+  border-radius:9px;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;padding:0 5px;
+}
+
+.sidebar-footer{
+  padding:14px;border-top:1px solid var(--border);flex-shrink:0;
+}
+.credits-box{
+  background:var(--raised);border:1px solid var(--border2);
+  border-radius:var(--r2);padding:12px 14px;
+}
+.credits-label{font-size:10.5px;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.credits-amount{font-family:var(--f-mono);font-size:17px;font-weight:700;color:var(--green);letter-spacing:-.5px}
+.credits-note{font-size:10.5px;color:var(--t3);margin-top:3px}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{
+  height:52px;min-height:52px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  padding:0 20px;flex-shrink:0;
+}
+.topbar-search{
+  flex:1;max-width:320px;background:var(--raised);
+  border:1px solid var(--border2);border-radius:var(--r1);
+  display:flex;align-items:center;gap:8px;padding:0 12px;height:34px;
+}
+.topbar-search input{background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--f-body);font-size:13px;width:100%}
+.topbar-search input::placeholder{color:var(--t3)}
+.topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.topbar-time{font-family:var(--f-mono);font-size:12px;color:var(--t2)}
+.topbar-btn{
+  width:34px;height:34px;border-radius:var(--r1);
+  background:var(--raised);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--t2);transition:all .12s;
+}
+.topbar-btn:hover{background:var(--hover);color:var(--t1)}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#4070FF,#A855F7);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:12px;font-weight:700;color:#fff;cursor:pointer;
+}
+
+/* ── Ticker ── */
+.ticker-wrap{
+  height:34px;min-height:34px;background:var(--card);border-bottom:1px solid var(--border);
+  overflow:hidden;display:flex;align-items:center;flex-shrink:0;
+}
+.ticker-inner{display:flex;width:max-content;animation:ticker 50s linear infinite}
+.ticker-inner:hover{animation-play-state:paused}
+.ticker-item{
+  display:flex;align-items:center;gap:7px;padding:0 22px;
+  border-right:1px solid var(--border);font-size:12px;white-space:nowrap;
+}
+.t-name{font-family:var(--f-head);font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;text-transform:uppercase}
+.t-val{font-family:var(--f-mono);font-size:12px;color:var(--t1)}
+.t-chg{font-family:var(--f-mono);font-size:11px}
+
+/* ── Page ── */
+.page{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:20px}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ph-title{font-family:var(--f-head);font-size:19px;font-weight:700;color:var(--t1)}
+.ph-sub{font-size:12px;color:var(--t2);margin-top:3px}
+
+/* ── Cards / surfaces ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2)}
+.card-p{padding:18px 20px}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.card-head-title{font-family:var(--f-head);font-size:13.5px;font-weight:600;color:var(--t1)}
+
+/* ── Stat card ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;display:flex;flex-direction:column;gap:5px}
+.stat-label{font-size:11px;color:var(--t3);font-weight:500;text-transform:uppercase;letter-spacing:.6px}
+.stat-val{font-family:var(--f-mono);font-size:19px;font-weight:700;color:var(--t1);letter-spacing:-.5px}
+.stat-delta{font-size:11.5px;font-weight:600;font-family:var(--f-mono)}
+.stat-hint{font-size:11px;color:var(--t3);margin-top:1px}
+
+/* ── Colors ── */
+.up{color:var(--green)!important}
+.down{color:var(--red)!important}
+.muted{color:var(--t2)}
+.mono{font-family:var(--f-mono)!important}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600;letter-spacing:.2px}
+.badge-g{background:var(--green-d);color:var(--green)}
+.badge-r{background:var(--red-d);color:var(--red)}
+.badge-b{background:var(--accent-d);color:var(--accent)}
+.badge-y{background:var(--yellow-d);color:var(--yellow)}
+.badge-n{background:rgba(112,144,184,.1);color:var(--t2)}
+
+/* ── Table ── */
+.dt{width:100%;border-collapse:collapse}
+.dt th{
+  text-align:left;padding:8px 14px;color:var(--t3);
+  font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;
+  border-bottom:1px solid var(--border);white-space:nowrap;font-family:var(--f-body);
+}
+.dt td{
+  padding:10px 14px;border-bottom:1px solid rgba(25,46,74,.35);
+  font-size:13px;white-space:nowrap;
+}
+.dt tr:last-child td{border-bottom:none}
+.dt tbody tr{transition:background .1s;cursor:pointer}
+.dt tbody tr:hover td{background:rgba(64,112,255,.04)}
+.dt .sym{font-family:var(--f-head);font-weight:600;font-size:13px;color:var(--t1)}
+.dt .name-cell{color:var(--t2);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.dt .num{font-family:var(--f-mono);font-size:12.5px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 18px;border-radius:var(--r1);font-family:var(--f-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;border:none;outline:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
+.btn-buy{background:var(--green);color:#001a11}
+.btn-buy:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-sell{background:var(--red);color:#fff}
+.btn-sell:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--raised);color:var(--t1)}
+.btn-sm{padding:5px 10px;font-size:11.5px}
+.btn-lg{padding:13px 24px;font-size:14px;letter-spacing:.1px}
+.btn-full{width:100%;border-radius:var(--r1)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ── Input ── */
+.input{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r1);color:var(--t1);font-family:var(--f-body);font-size:13.5px;padding:9px 12px;outline:none;width:100%;transition:border-color .14s}
+.input:focus{border-color:var(--accent)}
+.input::placeholder{color:var(--t3)}
+select.input{cursor:pointer}
+select.input option{background:var(--raised)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:3px}
+.tab{padding:6px 14px;border-radius:var(--r1);font-size:12.5px;font-weight:500;cursor:pointer;color:var(--t2);transition:all .12s;border:none;background:transparent;font-family:var(--f-body)}
+.tab:hover{color:var(--t1);background:var(--raised)}
+.tab.active{background:var(--accent-d);color:var(--accent);font-weight:600}
+
+/* ── Sector tag ── */
+.sec-tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--accent-d);color:var(--accent);letter-spacing:.3px}
+
+/* ── Heatmap ── */
+.heatmap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.heat-cell{border-radius:var(--r2);padding:12px 14px;cursor:pointer;transition:all .15s}
+.heat-name{font-size:10.5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.7}
+.heat-val{font-family:var(--f-mono);font-size:13.5px;font-weight:700;margin-top:3px}
+.heat-pct{font-family:var(--f-mono);font-size:11px;margin-top:2px}
+
+/* ── Order form ── */
+.order-panel{width:300px;min-width:300px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);display:flex;flex-direction:column;overflow:hidden}
+.order-tabs{display:flex;border-bottom:1px solid var(--border)}
+.order-tab{flex:1;padding:13px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .13s;font-family:var(--f-body);border:none;background:transparent}
+.order-tab.buy{color:var(--green)}
+.order-tab.buy.active{background:var(--green-d);border-bottom:2px solid var(--green)}
+.order-tab.sell{color:var(--red)}
+.order-tab.sell.active{background:var(--red-d);border-bottom:2px solid var(--red)}
+.order-body{padding:18px;flex:1;display:flex;flex-direction:column;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;color:var(--t2);font-weight:500;letter-spacing:.2px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.summary-row:last-child{border-bottom:none}
+.summary-key{font-size:12px;color:var(--t2)}
+.summary-val{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--t1)}
+
+/* ── Portfolio summary ── */
+.port-header{background:linear-gradient(135deg,#0F1E38,#162840);border:1px solid var(--border2);border-radius:var(--r3);padding:22px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.port-col{}
+.port-col-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:6px}
+.port-col-val{font-family:var(--f-mono);font-size:22px;font-weight:700;color:var(--t1);letter-spacing:-.5px}
+.port-col-sub{font-size:12px;margin-top:3px;font-family:var(--f-mono)}
+
+/* ── Compass ── */
+.compass-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
+.risk-btn{padding:7px 18px;border-radius:var(--r1);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .13s;border:1px solid var(--border2);background:transparent;color:var(--t2);font-family:var(--f-body)}
+.risk-btn.active{border-color:var(--accent);background:var(--accent-d);color:var(--accent)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-mini{background:var(--raised);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px}
+.stat-mini-label{font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stat-mini-val{font-family:var(--f-mono);font-size:16px;font-weight:700}
+.stat-mini-sub{font-size:11px;color:var(--t2);margin-top:3px}
+
+/* ── Flash on price update ── */
+.flash-g{animation:flashG .5s ease}
+.flash-r{animation:flashR .5s ease}
+
+/* ── Empty state ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;gap:12px;color:var(--t3)}
+.empty svg{opacity:.3}
+.empty-title{font-family:var(--f-head);font-size:15px;font-weight:600;color:var(--t2)}
+.empty-sub{font-size:12.5px;text-align:center;max-width:280px;line-height:1.6}
+
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+.toast{
+  background:var(--raised);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:12px 16px;font-size:13px;min-width:220px;
+  animation:fadeUp .3s ease forwards;
+  display:flex;align-items:center;gap:10px;
+}
+.toast-g{border-left:3px solid var(--green)}
+.toast-r{border-left:3px solid var(--red)}
+.toast-b{border-left:3px solid var(--accent)}
+
+/* ── Responsive grid helpers ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Data & utilities -->
+  <script>
+/* ─── NSE Stock Data ─────────────────────────────────────────────────────── */
+
+window.INDICES = [
+  { name:'NIFTY 50',     value:24835.40, change:142.30,  pct:0.58  },
+  { name:'SENSEX',       value:81921.30, change:487.20,  pct:0.60  },
+  { name:'NIFTY BANK',   value:53241.50, change:-128.40, pct:-0.24 },
+  { name:'NIFTY IT',     value:37845.60, change:524.80,  pct:1.41  },
+  { name:'NIFTY MIDCAP', value:52126.80, change:234.60,  pct:0.45  },
+  { name:'NIFTY PHARMA', value:19432.10, change:186.40,  pct:0.97  },
+  { name:'NIFTY AUTO',   value:22834.50, change:312.80,  pct:1.39  },
+  { name:'NIFTY METAL',  value:9234.60,  change:78.40,   pct:0.86  },
+  { name:'INDIA VIX',    value:13.84,    change:-0.62,   pct:-4.29 },
+];
+
+window.SECTOR_META = {
+  IT:      { mu:0.18, sigma:0.22, color:'#4070FF', label:'Information Technology' },
+  BANKING: { mu:0.15, sigma:0.24, color:'#00C2FF', label:'Banking & Finance' },
+  PHARMA:  { mu:0.15, sigma:0.20, color:'#A855F7', label:'Pharmaceuticals' },
+  AUTO:    { mu:0.14, sigma:0.25, color:'#F97316', label:'Automobiles' },
+  FMCG:    { mu:0.12, sigma:0.18, color:'#00D48C', label:'FMCG' },
+  ENERGY:  { mu:0.13, sigma:0.23, color:'#FFB700', label:'Energy & Power' },
+  METALS:  { mu:0.12, sigma:0.28, color:'#EC4899', label:'Metals & Mining' },
+  TELECOM: { mu:0.10, sigma:0.26, color:'#06B6D4', label:'Telecom' },
+  REALTY:  { mu:0.16, sigma:0.30, color:'#E040FB', label:'Real Estate' },
+  INFRA:   { mu:0.14, sigma:0.22, color:'#64748B', label:'Infrastructure' },
+};
+
+window.ALL_STOCKS = [
+  // IT
+  { sym:'TCS',        name:'Tata Consultancy Svcs',   ltp:3892.50,  chg:45.30,   pct:1.18,  vol:'18.2L',  cap:'14.1T', pe:31.2, h52:4592.25, l52:3311.10, sector:'IT' },
+  { sym:'INFY',       name:'Infosys Ltd',              ltp:1876.40,  chg:-12.85,  pct:-0.68, vol:'42.6L',  cap:'7.8T',  pe:28.4, h52:2018.95, l52:1351.55, sector:'IT' },
+  { sym:'WIPRO',      name:'Wipro Ltd',                ltp:468.75,   chg:5.20,    pct:1.12,  vol:'31.4L',  cap:'2.4T',  pe:22.1, h52:584.45,  l52:384.55,  sector:'IT' },
+  { sym:'HCLTECH',    name:'HCL Technologies',         ltp:1742.30,  chg:22.10,   pct:1.28,  vol:'15.7L',  cap:'4.7T',  pe:26.8, h52:1974.80, l52:1235.65, sector:'IT' },
+  { sym:'TECHM',      name:'Tech Mahindra Ltd',        ltp:1634.90,  chg:-8.45,   pct:-0.51, vol:'11.2L',  cap:'1.6T',  pe:38.6, h52:1808.50, l52:1095.45, sector:'IT' },
+  { sym:'LTIM',       name:'LTIMindtree Ltd',          ltp:5436.20,  chg:78.90,   pct:1.47,  vol:'3.8L',   cap:'1.6T',  pe:39.4, h52:6279.00, l52:4115.30, sector:'IT' },
+  { sym:'MPHASIS',    name:'Mphasis Ltd',              ltp:2876.50,  chg:34.20,   pct:1.20,  vol:'2.1L',   cap:'55.1K', pe:35.2, h52:3218.00, l52:2042.65, sector:'IT' },
+  { sym:'PERSISTENT', name:'Persistent Systems',       ltp:5124.80,  chg:56.40,   pct:1.11,  vol:'1.9L',   cap:'79.2K', pe:72.1, h52:5842.50, l52:3018.35, sector:'IT' },
+  // BANKING
+  { sym:'HDFCBANK',   name:'HDFC Bank Ltd',            ltp:1734.60,  chg:18.45,   pct:1.07,  vol:'48.3L',  cap:'13.2T', pe:20.1, h52:1880.00, l52:1363.45, sector:'BANKING' },
+  { sym:'ICICIBANK',  name:'ICICI Bank Ltd',           ltp:1298.75,  chg:22.30,   pct:1.75,  vol:'52.6L',  cap:'9.2T',  pe:19.8, h52:1362.35, l52:912.05,  sector:'BANKING' },
+  { sym:'SBIN',       name:'State Bank of India',      ltp:834.20,   chg:-4.65,   pct:-0.55, vol:'82.4L',  cap:'7.4T',  pe:11.2, h52:912.10,  l52:543.20,  sector:'BANKING' },
+  { sym:'KOTAKBANK',  name:'Kotak Mahindra Bank',      ltp:1956.40,  chg:14.20,   pct:0.73,  vol:'18.7L',  cap:'3.9T',  pe:23.6, h52:2253.00, l52:1543.85, sector:'BANKING' },
+  { sym:'AXISBANK',   name:'Axis Bank Ltd',            ltp:1184.50,  chg:-8.90,   pct:-0.75, vol:'32.1L',  cap:'3.7T',  pe:16.4, h52:1339.65, l52:938.50,  sector:'BANKING' },
+  { sym:'INDUSINDBK', name:'IndusInd Bank',            ltp:1398.25,  chg:24.80,   pct:1.80,  vol:'14.2L',  cap:'1.1T',  pe:15.8, h52:1694.50, l52:885.65,  sector:'BANKING' },
+  { sym:'BANKBARODA', name:'Bank of Baroda',           ltp:248.75,   chg:3.45,    pct:1.41,  vol:'48.6L',  cap:'1.3T',  pe:8.2,  h52:299.70,  l52:168.30,  sector:'BANKING' },
+  { sym:'PNB',        name:'Punjab National Bank',     ltp:124.50,   chg:-1.20,   pct:-0.96, vol:'96.2L',  cap:'1.4T',  pe:9.8,  h52:142.90,  l52:68.25,   sector:'BANKING' },
+  // PHARMA
+  { sym:'SUNPHARMA',  name:'Sun Pharmaceutical',       ltp:1632.45,  chg:28.70,   pct:1.79,  vol:'14.8L',  cap:'3.9T',  pe:35.6, h52:1762.80, l52:1048.85, sector:'PHARMA' },
+  { sym:'DRREDDY',    name:"Dr. Reddy's Labs",         ltp:6892.30,  chg:-34.50,  pct:-0.50, vol:'4.2L',   cap:'1.2T',  pe:22.4, h52:7506.20, l52:4960.05, sector:'PHARMA' },
+  { sym:'CIPLA',      name:'Cipla Ltd',                ltp:1534.80,  chg:18.90,   pct:1.25,  vol:'8.6L',   cap:'1.2T',  pe:28.7, h52:1702.35, l52:1016.95, sector:'PHARMA' },
+  { sym:'DIVISLAB',   name:"Divi's Laboratories",      ltp:5234.60,  chg:56.20,   pct:1.08,  vol:'2.8L',   cap:'1.4T',  pe:64.2, h52:5578.00, l52:3350.55, sector:'PHARMA' },
+  { sym:'APOLLOHOSP', name:'Apollo Hospitals',         ltp:7124.50,  chg:82.30,   pct:1.17,  vol:'1.9L',   cap:'1.0T',  pe:89.4, h52:7321.50, l52:4215.60, sector:'PHARMA' },
+  { sym:'LUPIN',      name:'Lupin Ltd',                ltp:2134.70,  chg:-14.60,  pct:-0.68, vol:'6.4L',   cap:'96.8K', pe:34.8, h52:2370.05, l52:1179.80, sector:'PHARMA' },
+  // AUTO
+  { sym:'MARUTI',     name:'Maruti Suzuki India',      ltp:12834.50, chg:124.80,  pct:0.98,  vol:'2.8L',   cap:'3.9T',  pe:30.2, h52:13680.00,l52:9270.95, sector:'AUTO' },
+  { sym:'TATAMOTORS', name:'Tata Motors Ltd',          ltp:976.40,   chg:18.65,   pct:1.95,  vol:'38.4L',  cap:'3.6T',  pe:12.4, h52:1179.00, l52:624.90,  sector:'AUTO' },
+  { sym:'BAJAJ-AUTO', name:'Bajaj Auto Ltd',           ltp:8976.20,  chg:-42.30,  pct:-0.47, vol:'3.6L',   cap:'2.6T',  pe:32.6, h52:9860.05, l52:6036.00, sector:'AUTO' },
+  { sym:'M&M',        name:'Mahindra & Mahindra',      ltp:2834.50,  chg:56.80,   pct:2.04,  vol:'12.4L',  cap:'3.5T',  pe:30.8, h52:3264.20, l52:1475.05, sector:'AUTO' },
+  { sym:'HEROMOTOCO', name:'Hero MotoCorp',            ltp:4834.60,  chg:34.20,   pct:0.71,  vol:'4.2L',   cap:'96.6K', pe:21.8, h52:5740.50, l52:3065.10, sector:'AUTO' },
+  { sym:'EICHERMOT',  name:'Eicher Motors Ltd',        ltp:4632.80,  chg:-28.40,  pct:-0.61, vol:'3.8L',   cap:'1.3T',  pe:35.4, h52:5200.00, l52:3258.10, sector:'AUTO' },
+  // FMCG
+  { sym:'HINDUNILVR', name:'Hindustan Unilever',       ltp:2634.50,  chg:-12.40,  pct:-0.47, vol:'8.6L',   cap:'6.2T',  pe:62.4, h52:2972.20, l52:2172.65, sector:'FMCG' },
+  { sym:'ITC',        name:'ITC Ltd',                  ltp:478.25,   chg:4.60,    pct:0.97,  vol:'142.8L', cap:'5.9T',  pe:27.6, h52:528.50,  l52:396.15,  sector:'FMCG' },
+  { sym:'NESTLEIND',  name:'Nestle India Ltd',         ltp:2434.80,  chg:18.20,   pct:0.75,  vol:'2.4L',   cap:'2.3T',  pe:78.2, h52:2778.00, l52:2079.05, sector:'FMCG' },
+  { sym:'BRITANNIA',  name:'Britannia Industries',     ltp:5134.20,  chg:34.60,   pct:0.68,  vol:'1.8L',   cap:'1.2T',  pe:56.8, h52:5832.50, l52:4225.00, sector:'FMCG' },
+  { sym:'DABUR',      name:'Dabur India Ltd',          ltp:534.70,   chg:-2.80,   pct:-0.52, vol:'14.6L',  cap:'94.8K', pe:52.4, h52:648.95,  l52:488.50,  sector:'FMCG' },
+  { sym:'MARICO',     name:'Marico Ltd',               ltp:674.30,   chg:6.40,    pct:0.96,  vol:'12.4L',  cap:'87.2K', pe:48.6, h52:724.10,  l52:518.55,  sector:'FMCG' },
+  // ENERGY
+  { sym:'RELIANCE',   name:'Reliance Industries',      ltp:2934.50,  chg:42.80,   pct:1.48,  vol:'78.4L',  cap:'19.8T', pe:28.4, h52:3218.50, l52:2180.00, sector:'ENERGY' },
+  { sym:'ONGC',       name:'Oil & Natural Gas Corp',   ltp:276.40,   chg:3.20,    pct:1.17,  vol:'98.6L',  cap:'3.5T',  pe:7.8,  h52:345.00,  l52:186.30,  sector:'ENERGY' },
+  { sym:'COALINDIA',  name:'Coal India Ltd',           ltp:478.25,   chg:-2.40,   pct:-0.50, vol:'56.4L',  cap:'2.9T',  pe:8.2,  h52:539.80,  l52:299.30,  sector:'ENERGY' },
+  { sym:'NTPC',       name:'NTPC Ltd',                 ltp:374.80,   chg:4.60,    pct:1.24,  vol:'64.2L',  cap:'3.6T',  pe:18.6, h52:448.45,  l52:221.65,  sector:'ENERGY' },
+  { sym:'POWERGRID',  name:'Power Grid Corp',          ltp:298.45,   chg:2.80,    pct:0.95,  vol:'42.8L',  cap:'2.8T',  pe:16.4, h52:366.20,  l52:206.50,  sector:'ENERGY' },
+  { sym:'ADANIGREEN', name:'Adani Green Energy',       ltp:1834.60,  chg:28.40,   pct:1.57,  vol:'8.4L',   cap:'2.9T',  pe:145.2,h52:2174.90, l52:824.25,  sector:'ENERGY' },
+  // METALS
+  { sym:'TATASTEEL',  name:'Tata Steel Ltd',           ltp:168.35,   chg:2.80,    pct:1.69,  vol:'248.6L', cap:'2.1T',  pe:24.8, h52:184.60,  l52:103.65,  sector:'METALS' },
+  { sym:'JSWSTEEL',   name:'JSW Steel Ltd',            ltp:934.50,   chg:14.60,   pct:1.59,  vol:'28.4L',  cap:'2.3T',  pe:28.4, h52:1063.00, l52:674.50,  sector:'METALS' },
+  { sym:'HINDALCO',   name:'Hindalco Industries',      ltp:678.25,   chg:8.90,    pct:1.33,  vol:'42.6L',  cap:'1.5T',  pe:18.6, h52:772.65,  l52:480.35,  sector:'METALS' },
+  { sym:'VEDL',       name:'Vedanta Ltd',              ltp:478.60,   chg:6.40,    pct:1.36,  vol:'52.4L',  cap:'1.8T',  pe:14.2, h52:526.80,  l52:218.55,  sector:'METALS' },
+  { sym:'SAIL',       name:'Steel Authority of India', ltp:132.45,   chg:-1.20,   pct:-0.90, vol:'86.4L',  cap:'54.8K', pe:12.4, h52:175.35,  l52:86.75,   sector:'METALS' },
+  // TELECOM
+  { sym:'BHARTIARTL', name:'Bharti Airtel Ltd',        ltp:1634.50,  chg:24.80,   pct:1.54,  vol:'18.6L',  cap:'9.8T',  pe:72.4, h52:1779.00, l52:948.35,  sector:'TELECOM' },
+  { sym:'IDEA',       name:'Vodafone Idea Ltd',        ltp:14.25,    chg:-0.35,   pct:-2.40, vol:'348.6L', cap:'38.4K', pe:null, h52:19.20,   l52:7.05,    sector:'TELECOM' },
+  // REALTY
+  { sym:'DLF',        name:'DLF Ltd',                  ltp:834.60,   chg:18.40,   pct:2.25,  vol:'14.8L',  cap:'2.1T',  pe:52.4, h52:967.00,  l52:498.85,  sector:'REALTY' },
+  { sym:'GODREJPROP', name:'Godrej Properties',        ltp:2634.50,  chg:42.80,   pct:1.65,  vol:'4.6L',   cap:'73.4K', pe:42.8, h52:3001.00, l52:1490.05, sector:'REALTY' },
+  { sym:'OBEROIRLTY', name:'Oberoi Realty Ltd',        ltp:1834.60,  chg:24.60,   pct:1.36,  vol:'2.8L',   cap:'66.8K', pe:38.6, h52:2072.00, l52:1037.85, sector:'REALTY' },
+  // INFRA
+  { sym:'LT',         name:'Larsen & Toubro',          ltp:3634.50,  chg:48.60,   pct:1.36,  vol:'8.4L',   cap:'5.1T',  pe:34.6, h52:3896.00, l52:2659.45, sector:'INFRA' },
+  { sym:'ULTRACEMCO', name:'UltraTech Cement',         ltp:10834.50, chg:124.80,  pct:1.16,  vol:'1.8L',   cap:'3.1T',  pe:42.4, h52:11878.00,l52:7820.00, sector:'INFRA' },
+  { sym:'ACC',        name:'ACC Ltd',                  ltp:2234.50,  chg:28.60,   pct:1.30,  vol:'2.4L',   cap:'42.0K', pe:38.2, h52:2675.00, l52:1768.45, sector:'INFRA' },
+];
+
+// Build a quick lookup map
+window.STOCK_MAP = {};
+window.ALL_STOCKS.forEach(s => { window.STOCK_MAP[s.sym] = s; });
+
+/* ─── Formatting ───────────────────────────────────────────────────────── */
+
+window.fmtINR = function(v) {
+  if (isNaN(v)) return '—';
+  const abs = Math.abs(v);
+  let s;
+  if (abs >= 1e7) s = '₹' + (v/1e7).toFixed(2) + ' Cr';
+  else if (abs >= 1e5) s = '₹' + (v/1e5).toFixed(2) + ' L';
+  else s = '₹' + v.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return s;
+};
+
+window.fmtLarge = function(v) {
+  if (isNaN(v)) return '—';
+  const abs = Math.abs(v);
+  if (abs >= 1e7) return '₹' + (v/1e7).toFixed(2) + ' Cr';
+  if (abs >= 1e5) return '₹' + (v/1e5).toFixed(2) + ' L';
+  if (abs >= 1e3) return '₹' + (v/1e3).toFixed(1) + 'K';
+  return '₹' + v.toFixed(0);
+};
+
+window.fmtPrice = function(v) {
+  if (isNaN(v)) return '—';
+  return '₹' + v.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+};
+
+window.fmtPct = function(v, decimals=2) {
+  if (isNaN(v)) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(decimals) + '%';
+};
+
+/* ─── Seeded PRNG ──────────────────────────────────────────────────────── */
+function seededRng(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function() {
+    s = s * 16807 % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+/* ─── Box-Muller normal random ────────────────────────────────────────── */
+window.randNorm = function() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+};
+
+/* ─── Generate fake 30-day price history ──────────────────────────────── */
+window.genHistory = function(sym, currentPrice, days = 60) {
+  const seed = sym.split('').reduce((a,c) => a + c.charCodeAt(0) * 31, 0);
+  const rng = seededRng(seed);
+  const vol = 0.018; // daily volatility ~1.8%
+  const prices = [];
+  let p = currentPrice * (0.88 + rng() * 0.18); // start 10-20% away
+  for (let i = 0; i < days - 1; i++) {
+    const drift = Math.log(currentPrice / p) / (days - i) * 0.4;
+    p = p * Math.exp(drift + (rng() - 0.5) * vol * 2);
+    prices.push(p);
+  }
+  prices.push(currentPrice);
+  return prices;
+};
+
+/* ─── Monte Carlo GBM simulation ─────────────────────────────────────── */
+// portfolio: [{ sym, qty, avgPrice, sector }]
+// livePrices: { sym: { ltp } }
+// Returns { percentiles: {p10,p25,p50,p75,p90}, finalVals, initialValue }
+window.runMonteCarlo = function(portfolio, livePrices, profile = 'moderate', sims = 1000) {
+  const multipliers = {
+    conservative: { mu: 0.70, sigma: 0.80 },
+    moderate:     { mu: 1.00, sigma: 1.00 },
+    aggressive:   { mu: 1.30, sigma: 1.20 },
+  };
+  const m = multipliers[profile] || multipliers.moderate;
+
+  // Compute total value & weighted sector params
+  let totalValue = 0;
+  let wMu = 0, wSigma = 0;
+  const sectorAlloc = {};
+
+  portfolio.forEach(h => {
+    const price = livePrices[h.sym] ? livePrices[h.sym].ltp : h.avgPrice;
+    const val = price * h.qty;
+    totalValue += val;
+    const meta = window.SECTOR_META[h.sector] || { mu:0.14, sigma:0.22 };
+    sectorAlloc[h.sector] = (sectorAlloc[h.sector] || 0) + val;
+    wMu    += val * meta.mu;
+    wSigma += val * meta.sigma;
+  });
+
+  if (totalValue <= 0) return null;
+  wMu    = (wMu    / totalValue) * m.mu;
+  wSigma = (wSigma / totalValue) * m.sigma;
+
+  const steps = 60; // monthly, 5 years
+  const dt    = 1 / 12;
+  const paths = [];
+
+  for (let s = 0; s < sims; s++) {
+    let v = totalValue;
+    const path = [v];
+    for (let t = 0; t < steps; t++) {
+      const z = window.randNorm();
+      v *= Math.exp((wMu - 0.5 * wSigma * wSigma) * dt + wSigma * Math.sqrt(dt) * z);
+      path.push(v);
+    }
+    paths.push(path);
+  }
+
+  // Compute percentiles at each timestep
+  const p10=[],p25=[],p50=[],p75=[],p90=[];
+  for (let t = 0; t <= steps; t++) {
+    const vals = paths.map(p => p[t]).sort((a,b) => a-b);
+    p10.push(vals[Math.floor(0.10 * sims)]);
+    p25.push(vals[Math.floor(0.25 * sims)]);
+    p50.push(vals[Math.floor(0.50 * sims)]);
+    p75.push(vals[Math.floor(0.75 * sims)]);
+    p90.push(vals[Math.floor(0.90 * sims)]);
+  }
+
+  const finalVals = paths.map(p => p[steps]).sort((a,b) => a-b);
+  const probProfit = finalVals.filter(v => v > totalValue).length / sims * 100;
+
+  return {
+    percentiles: {p10,p25,p50,p75,p90},
+    finalVals,
+    initialValue: totalValue,
+    probProfit,
+    sectorAlloc,
+    wMu, wSigma,
+    stats: {
+      median:   p50[steps],
+      best:     p90[steps],
+      worst:    p10[steps],
+      var5:     finalVals[Math.floor(0.05 * sims)],
+      cagr:     (Math.pow(p50[steps] / totalValue, 1/5) - 1) * 100,
+    }
+  };
+};
+
+/* ─── Draw Monte Carlo chart on Canvas ───────────────────────────────── */
+window.drawMCChart = function(canvas, result) {
+  if (!canvas || !result) return;
+  const ctx  = canvas.getContext('2d');
+  const W    = canvas.width;
+  const H    = canvas.height;
+  const PAD  = { t:20, r:24, b:48, l:76 };
+  const PW   = W - PAD.l - PAD.r;
+  const PH   = H - PAD.t - PAD.b;
+  const {p10,p25,p50,p75,p90} = result.percentiles;
+  const N = p50.length;
+
+  const allV = [...p10,...p90];
+  const minV = Math.min(...allV) * 0.96;
+  const maxV = Math.max(...allV) * 1.04;
+  const xOf = t => PAD.l + (t/(N-1)) * PW;
+  const yOf = v => PAD.t + PH - Math.max(0, Math.min(PH, ((v-minV)/(maxV-minV)) * PH));
+
+  // Clear & background
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0F1E38';
+  ctx.fillRect(0,0,W,H);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(26,47,74,.9)';
+  ctx.lineWidth = 1;
+  for (let i=1;i<=4;i++) {
+    const y = PAD.t + (i/5)*PH;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+PW,y); ctx.stroke();
+  }
+  [12,24,36,48].forEach(t => {
+    const x = xOf(t);
+    ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+PH); ctx.stroke();
+  });
+
+  // Fill bands
+  function fillBand(a1,a2,color) {
+    ctx.beginPath();
+    a1.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
+    for(let i=a2.length-1;i>=0;i--) ctx.lineTo(xOf(i),yOf(a2[i]));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  fillBand(p10,p90,'rgba(64,112,255,.07)');
+  fillBand(p25,p75,'rgba(64,112,255,.13)');
+  fillBand(p50,p75,'rgba(0,212,140,.07)');
+
+  // Lines
+  function drawLine(arr,color,width,dash=[]) {
+    ctx.beginPath(); ctx.setLineDash(dash);
+    ctx.strokeStyle=color; ctx.lineWidth=width;
+    arr.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  drawLine(p10,'rgba(255,63,94,.55)',  1.5,[8,4]);
+  drawLine(p25,'rgba(255,140,80,.4)', 1);
+  drawLine(p75,'rgba(0,212,140,.45)', 1);
+  drawLine(p90,'rgba(0,212,140,.65)', 1.5,[8,4]);
+  drawLine(p50,'#4070FF',             2.5);
+
+  // Initial value reference
+  const yRef = yOf(result.initialValue);
+  if (yRef > PAD.t && yRef < PAD.t+PH) {
+    ctx.setLineDash([5,3]);
+    ctx.strokeStyle='rgba(221,232,248,.2)';
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.l,yRef); ctx.lineTo(PAD.l+PW,yRef); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(221,232,248,.3)';
+    ctx.font='10px Space Mono,monospace';
+    ctx.textAlign='left';
+    ctx.fillText('Current',PAD.l+4,yRef-4);
+  }
+
+  // X labels
+  ctx.fillStyle='#364F6B'; ctx.font='11px DM Sans,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('Now',xOf(0),PAD.t+PH+18);
+  [12,24,36,48,60].forEach((t,i) => {
+    if (t < N) ctx.fillText('Y'+(i+1), xOf(t), PAD.t+PH+18);
+  });
+
+  // Y labels
+  ctx.textAlign='right'; ctx.font='10px Space Mono,monospace'; ctx.fillStyle='#364F6B';
+  for(let i=0;i<=4;i++) {
+    const v = minV + i*((maxV-minV)/4);
+    ctx.fillText(window.fmtLarge(v), PAD.l-8, yOf(v)+3);
+  }
+
+  // Axis
+  ctx.strokeStyle='rgba(26,47,74,1)'; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH);
+  ctx.stroke();
+
+  // Legend
+  const lg = [{c:'#4070FF',label:'Median (P50)'},{c:'rgba(0,212,140,.7)',label:'P75–P90'},{c:'rgba(255,63,94,.7)',label:'P10–P25'}];
+  ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='left';
+  let lx = PAD.l;
+  lg.forEach(({c,label}) => {
+    ctx.fillStyle=c; ctx.fillRect(lx,PAD.t+PH+32,16,3);
+    ctx.fillStyle='#7090B8'; ctx.fillText(label, lx+20, PAD.t+PH+36);
+    lx += 110;
+  });
+};
+
+/* ─── Price chart ─────────────────────────────────────────────────────── */
+window.drawPriceChart = function(canvas, prices, isUp) {
+  if (!canvas || !prices || prices.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = { t:12, r:12, b:28, l:58 };
+  const PW = W-PAD.l-PAD.r, PH = H-PAD.t-PAD.b;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0F1E38'; ctx.fillRect(0,0,W,H);
+
+  const min = Math.min(...prices)*0.998, max = Math.max(...prices)*1.002;
+  const xOf = i => PAD.l + (i/(prices.length-1))*PW;
+  const yOf = v => PAD.t + PH - ((v-min)/(max-min))*PH;
+  const color = isUp ? '#00D48C' : '#FF3F5E';
+
+  // Gradient fill
+  const grd = ctx.createLinearGradient(0,PAD.t,0,PAD.t+PH);
+  grd.addColorStop(0, isUp ? 'rgba(0,212,140,.25)' : 'rgba(255,63,94,.25)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  prices.forEach((p,i) => i===0 ? ctx.moveTo(xOf(i),yOf(p)) : ctx.lineTo(xOf(i),yOf(p)));
+  ctx.lineTo(xOf(prices.length-1), PAD.t+PH);
+  ctx.lineTo(xOf(0), PAD.t+PH);
+  ctx.closePath();
+  ctx.fillStyle=grd; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.8;
+  prices.forEach((p,i) => i===0 ? ctx.moveTo(xOf(i),yOf(p)) : ctx.lineTo(xOf(i),yOf(p)));
+  ctx.stroke();
+
+  // Grid lines
+  ctx.strokeStyle='rgba(26,47,74,.7)'; ctx.lineWidth=.7;
+  for(let i=1;i<=3;i++) {
+    const y=PAD.t+(i/4)*PH;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+PW,y); ctx.stroke();
+  }
+
+  // Y labels
+  ctx.fillStyle='#364F6B'; ctx.font='9.5px Space Mono,monospace'; ctx.textAlign='right';
+  for(let i=0;i<=3;i++) {
+    const v = min + i*((max-min)/3);
+    ctx.fillText(fmtPrice(v), PAD.l-5, yOf(v)+3);
+  }
+
+  // X labels
+  ctx.textAlign='center'; ctx.font='9.5px DM Sans,sans-serif';
+  const marks=[0, Math.floor(prices.length/4), Math.floor(prices.length/2), Math.floor(prices.length*3/4), prices.length-1];
+  const labs =['30D','22D','15D','7D','Now'];
+  marks.forEach((m,i) => ctx.fillText(labs[i], xOf(m), PAD.t+PH+16));
+
+  // Axis
+  ctx.strokeStyle='rgba(26,47,74,1)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH); ctx.stroke();
+};
+
+  </script>
+
+  <!-- Tweaks panel -->
+  <script type="text/babel">
+// @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
+
+/* BEGIN USAGE */
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+// Exports (to window): useTweaks, TweaksPanel, TweakSection, TweakRow, TweakSlider,
+//   TweakToggle, TweakRadio, TweakSelect, TweakText, TweakNumber, TweakColor, TweakButton.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// TweakRadio is the segmented control for 2–3 short options (auto-falls-back to
+// TweakSelect past ~16/~10 chars per label); reach for TweakSelect directly when
+// options are many or long. For color tweaks always curate 3-4 options rather than
+// a free picker; an option can also be a whole 2–5 color palette (the stored value
+// is the array). The Tweak* controls are a floor, not a ceiling — build custom
+// controls inside the panel if a tweak calls for UI they don't cover.
+/* END USAGE */
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+  </script>
+
+  <!-- Sidebar -->
+  <script type="text/babel">
+// components/Sidebar.jsx
+const { useState } = React;
+
+const NAV = [
+  { id:'dashboard', label:'Dashboard',       icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".9"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".9"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".9"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".9"/></svg> },
+  { id:'markets',   label:'Markets',          icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/><rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="2" width="3" height="13" rx="1" fill="currentColor"/><polyline points="1,8 6,4 11,1 15,3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/></svg> },
+  { id:'trade',     label:'Trade',            icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 11l4-4 3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M11 5h4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+  { id:'portfolio', label:'Portfolio',        icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M1 9h14" stroke="currentColor" strokeWidth="1.2" opacity=".5"/></svg> },
+  { id:'compass',   label:'Compass',          icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 3v1M8 12v1M3 8h1M12 8h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10 6L7 8l3 2-1-2 1-2z" fill="currentColor"/><path d="M6 10l3-2-3-2 1 2-1 2z" fill="currentColor" opacity=".5"/></svg> },
+  { id:'orders',    label:'Orders',           icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 5.5h6M5 8h6M5 10.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg> },
+  { id:'watchlist', label:'Watchlist',        icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.7 3.5 3.8.55-2.75 2.68.65 3.77L8 10.6l-3.4 1.9.65-3.77L2.5 6.05l3.8-.55L8 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg> },
+];
+
+function Sidebar({ page, setPage, credits, portfolio, livePrices, openOrders }) {
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-logo">
+        <div className="logo-mark">
+          <div className="logo-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 12L6 7l3 3 5-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          BAZAAR
+        </div>
+        <div className="logo-sub">Indian Equity Platform</div>
+        <div className="market-status">
+          <span className="market-dot pulse"></span>
+          NSE OPEN
+        </div>
+      </div>
+
+      <nav className="sidebar-nav">
+        {NAV.map(item => (
+          <button
+            key={item.id}
+            className={`nav-item${page === item.id ? ' active' : ''}`}
+            onClick={() => setPage(item.id)}
+          >
+            {item.icon}
+            {item.label}
+            {item.id === 'orders' && openOrders > 0 &&
+              <span className="nav-badge">{openOrders}</span>
+            }
+          </button>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="credits-box">
+          <div className="credits-label">Paper Credits</div>
+          <div className="credits-amount">{fmtLarge(credits)}</div>
+          <div className="credits-note">Dummy trading account</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+window.Sidebar = Sidebar;
+
+  </script>
+
+  <!-- Dashboard -->
+  <script type="text/babel">
+// components/Dashboard.jsx
+const { useState, useEffect, useMemo } = React;
+
+function IndexTicker({ indices }) {
+  const doubled = [...indices, ...indices];
+  return (
+    <div className="ticker-wrap">
+      <div className="ticker-inner">
+        {doubled.map((idx, i) => (
+          <div key={i} className="ticker-item">
+            <span className="t-name">{idx.name}</span>
+            <span className="t-val">{idx.value.toLocaleString('en-IN', {minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+            <span className={`t-chg ${idx.pct >= 0 ? 'up' : 'down'}`}>
+              {idx.pct >= 0 ? '▲' : '▼'} {Math.abs(idx.pct).toFixed(2)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectorHeatmap({ livePrices, navigate }) {
+  const sectors = Object.keys(window.SECTOR_META);
+  const sectorData = sectors.map(sec => {
+    const stocks = window.ALL_STOCKS.filter(s => s.sector === sec);
+    const avgPct = stocks.reduce((a, s) => {
+      const lp = livePrices[s.sym];
+      return a + (lp ? lp.pct : s.pct);
+    }, 0) / stocks.length;
+    return { sec, label: sec, avgPct, color: window.SECTOR_META[sec].color };
+  });
+
+  function getBg(pct) {
+    if (pct >= 1.5) return 'rgba(0,212,140,.22)';
+    if (pct >= 0.5) return 'rgba(0,212,140,.12)';
+    if (pct > -0.5) return 'rgba(112,144,184,.08)';
+    if (pct > -1.5) return 'rgba(255,63,94,.12)';
+    return 'rgba(255,63,94,.22)';
+  }
+
+  return (
+    <div>
+      <div className="card-head" style={{borderRadius:'9px 9px 0 0'}}>
+        <span className="card-head-title">Sector Performance</span>
+        <span style={{fontSize:11,color:'var(--t3)'}}>Today</span>
+      </div>
+      <div style={{padding:'14px',background:'var(--card)',borderRadius:'0 0 9px 9px',border:'1px solid var(--border)',borderTop:'none'}}>
+        <div className="heatmap">
+          {sectorData.map(({sec,label,avgPct,color}) => (
+            <div
+              key={sec}
+              className="heat-cell"
+              style={{background:getBg(avgPct),border:`1px solid ${avgPct>=0?'rgba(0,212,140,.15)':'rgba(255,63,94,.15)'}`}}
+              onClick={() => navigate('markets', sec)}
+            >
+              <div className="heat-name" style={{color}}>{label}</div>
+              <div className="heat-val" style={{color: avgPct>=0?'var(--green)':'var(--red)'}}>
+                {avgPct >= 0 ? '+' : ''}{avgPct.toFixed(2)}%
+              </div>
+              <div className="heat-pct" style={{color:'var(--t3)'}}>
+                {window.ALL_STOCKS.filter(s=>s.sector===sec).length} stocks
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoverTable({ stocks, livePrices, type, navigate }) {
+  const sorted = [...stocks]
+    .map(s => ({...s, curPct: livePrices[s.sym] ? livePrices[s.sym].pct : s.pct}))
+    .sort((a,b) => type==='gain' ? b.curPct-a.curPct : a.curPct-b.curPct)
+    .slice(0, 6);
+
+  return (
+    <div className="card">
+      <div className="card-head">
+        <span className="card-head-title">{type==='gain' ? '📈 Top Gainers' : '📉 Top Losers'}</span>
+        <span className={`badge ${type==='gain'?'badge-g':'badge-r'}`}>Today</span>
+      </div>
+      <table className="dt" style={{width:'100%'}}>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>LTP</th>
+            <th>Chg%</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map(s => {
+            const lp = livePrices[s.sym] || s;
+            return (
+              <tr key={s.sym} onClick={() => navigate('trade', s.sym)}>
+                <td>
+                  <div className="sym">{s.sym}</div>
+                  <div className="name-cell">{s.name}</div>
+                </td>
+                <td className="num">{fmtPrice(lp.ltp || s.ltp)}</td>
+                <td className={`num ${lp.pct >= 0 ? 'up' : 'down'}`}>
+                  {lp.pct >= 0 ? '+' : ''}{(lp.pct||0).toFixed(2)}%
+                </td>
+                <td>
+                  <button className={`btn btn-sm ${type==='gain'?'btn-buy':'btn-sell'}`}
+                    onClick={e=>{e.stopPropagation();navigate('trade',s.sym)}}>
+                    {type==='gain'?'Buy':'Sell'}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Dashboard({ livePrices, portfolio, credits, navigate }) {
+  const portfolioValue = portfolio.reduce((sum, h) => {
+    const lp = livePrices[h.sym];
+    return sum + (lp ? lp.ltp : h.avgPrice) * h.qty;
+  }, 0);
+
+  const invested = portfolio.reduce((sum, h) => sum + h.avgPrice * h.qty, 0);
+  const todayPL  = portfolio.reduce((sum, h) => {
+    const lp = livePrices[h.sym];
+    if (!lp) return sum;
+    return sum + lp.chg * h.qty;
+  }, 0);
+  const totalPL  = portfolioValue - invested;
+  const totalPLPct = invested > 0 ? (totalPL / invested * 100) : 0;
+
+  const indices = useMemo(() => {
+    return window.INDICES.map(idx => ({
+      ...idx,
+      value: idx.value * (1 + (Math.random()-0.5)*0.0001),
+    }));
+  }, []);
+
+  return (
+    <div className="page fade-up">
+      <IndexTicker indices={indices} />
+
+      {/* Stats */}
+      <div className="stat-grid">
+        <div className="stat-card">
+          <div className="stat-label">Portfolio Value</div>
+          <div className="stat-val">{fmtLarge(portfolioValue)}</div>
+          <div className={`stat-delta ${totalPL>=0?'up':'down'}`}>
+            {fmtINR(totalPL)} ({fmtPct(totalPLPct)}) all time
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Today's P&L</div>
+          <div className={`stat-val ${todayPL>=0?'up':'down'}`}>{fmtINR(todayPL)}</div>
+          <div className="stat-hint">
+            {portfolio.length} positions active
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Total Invested</div>
+          <div className="stat-val">{fmtLarge(invested)}</div>
+          <div className="stat-hint">{portfolio.length} holdings</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Available Credits</div>
+          <div className="stat-val up">{fmtLarge(credits)}</div>
+          <div className="stat-hint">Paper trading account</div>
+        </div>
+      </div>
+
+      {/* Movers */}
+      <div className="grid-2">
+        <MoverTable stocks={window.ALL_STOCKS} livePrices={livePrices} type="gain" navigate={navigate} />
+        <MoverTable stocks={window.ALL_STOCKS} livePrices={livePrices} type="loss" navigate={navigate} />
+      </div>
+
+      {/* Sector Heatmap */}
+      <SectorHeatmap livePrices={livePrices} navigate={navigate} />
+    </div>
+  );
+}
+
+window.Dashboard = Dashboard;
+
+  </script>
+
+  <!-- Markets -->
+  <script type="text/babel">
+// components/Markets.jsx
+const { useState, useMemo } = React;
+
+function Sparkline({ data, up }) {
+  if (!data || data.length < 2) return null;
+  const W = 72, H = 26;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => [
+    (i / (data.length - 1)) * W,
+    H - 2 - ((v - min) / range) * (H - 4)
+  ]);
+  const d = pts.map((p, i) => `${i===0?'M':'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  return (
+    <svg width={W} height={H} style={{display:'block'}}>
+      <path d={d} fill="none" stroke={up ? 'var(--green)' : 'var(--red)'}
+        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const SECTORS = ['ALL','IT','BANKING','PHARMA','AUTO','FMCG','ENERGY','METALS','TELECOM','REALTY','INFRA'];
+
+function Markets({ livePrices, watchlist, setWatchlist, navigate, initialSector }) {
+  const [sector, setSector] = useState(initialSector || 'ALL');
+  const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState('pct');
+  const [sortDir, setSortDir] = useState(-1);
+
+  const filtered = useMemo(() => {
+    let list = window.ALL_STOCKS.map(s => {
+      const lp = livePrices[s.sym];
+      return { ...s, ltp: lp ? lp.ltp : s.ltp, chg: lp ? lp.chg : s.chg, pct: lp ? lp.pct : s.pct };
+    });
+    if (sector !== 'ALL') list = list.filter(s => s.sector === sector);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(s => s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+    }
+    return list.sort((a, b) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (av == null) return 1; if (bv == null) return -1;
+      return (av - bv) * sortDir;
+    });
+  }, [sector, search, sortKey, sortDir, livePrices]);
+
+  function handleSort(key) {
+    if (sortKey === key) setSortDir(d => -d);
+    else { setSortKey(key); setSortDir(-1); }
+  }
+
+  function toggleWatch(sym) {
+    setWatchlist(prev => prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym]);
+  }
+
+  const SortArrow = ({ k }) => sortKey===k
+    ? <span style={{marginLeft:3,opacity:.8}}>{sortDir>0?'↑':'↓'}</span>
+    : <span style={{marginLeft:3,opacity:.2}}>↕</span>;
+
+  return (
+    <div className="page fade-up">
+      {/* Header */}
+      <div className="ph">
+        <div>
+          <div className="ph-title">Markets</div>
+          <div className="ph-sub">{filtered.length} instruments · NSE · Live prices</div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <div className="topbar-search" style={{width:220}}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="var(--t3)" strokeWidth="1.5"/>
+              <path d="M11 11l3 3" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <input placeholder="Search symbol or name…" value={search} onChange={e=>setSearch(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      {/* Sector tabs */}
+      <div className="tabs" style={{overflowX:'auto',gap:4,flexWrap:'wrap'}}>
+        {SECTORS.map(s => (
+          <button key={s} className={`tab${sector===s?' active':''}`} onClick={()=>setSector(s)}>
+            {s === 'ALL' ? 'All Sectors' : s}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="card" style={{overflow:'hidden'}}>
+        <div style={{overflowX:'auto'}}>
+          <table className="dt">
+            <thead>
+              <tr>
+                <th style={{cursor:'default'}}>Symbol</th>
+                <th onClick={()=>handleSort('ltp')} style={{cursor:'pointer'}}>LTP <SortArrow k="ltp"/></th>
+                <th onClick={()=>handleSort('chg')} style={{cursor:'pointer'}}>Chg <SortArrow k="chg"/></th>
+                <th onClick={()=>handleSort('pct')} style={{cursor:'pointer'}}>Chg% <SortArrow k="pct"/></th>
+                <th>Volume</th>
+                <th onClick={()=>handleSort('pe')} style={{cursor:'pointer'}}>P/E <SortArrow k="pe"/></th>
+                <th>Mkt Cap</th>
+                <th>52W Range</th>
+                <th>30D</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(s => {
+                const up = s.pct >= 0;
+                const hist = window.genHistory(s.sym, s.ltp);
+                const inWatch = watchlist.includes(s.sym);
+                return (
+                  <tr key={s.sym} onClick={() => navigate('trade', s.sym)}>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{width:6,height:6,borderRadius:'50%',background: window.SECTOR_META[s.sector]?.color||'var(--accent)',flexShrink:0}}></div>
+                        <div>
+                          <div className="sym">{s.sym}</div>
+                          <div className="name-cell" style={{maxWidth:140}}>{s.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="num" style={{fontWeight:600}}>{fmtPrice(s.ltp)}</td>
+                    <td className={`num ${up?'up':'down'}`}>{up?'+':''}{s.chg.toFixed(2)}</td>
+                    <td>
+                      <span className={`badge ${up?'badge-g':'badge-r'}`}>
+                        {up?'▲':'▼'} {Math.abs(s.pct).toFixed(2)}%
+                      </span>
+                    </td>
+                    <td className="num muted">{s.vol}</td>
+                    <td className="num">{s.pe != null ? s.pe.toFixed(1) : '—'}</td>
+                    <td className="num muted">{s.cap}</td>
+                    <td>
+                      <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                        <div style={{fontSize:10.5,color:'var(--t3)'}}>
+                          <span className="up">{fmtPrice(s.h52)}</span>
+                          <span style={{color:'var(--t3)',margin:'0 4px'}}>/</span>
+                          <span className="down">{fmtPrice(s.l52)}</span>
+                        </div>
+                        {/* 52w progress bar */}
+                        <div style={{width:70,height:3,background:'var(--raised)',borderRadius:2,overflow:'hidden'}}>
+                          <div style={{
+                            height:'100%', borderRadius:2,
+                            width: `${Math.max(0,Math.min(100,(s.ltp - s.l52)/(s.h52 - s.l52)*100))}%`,
+                            background:'linear-gradient(90deg,var(--red),var(--yellow),var(--green))'
+                          }}></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><Sparkline data={hist.slice(-20)} up={up} /></td>
+                    <td>
+                      <div style={{display:'flex',gap:6,alignItems:'center'}} onClick={e=>e.stopPropagation()}>
+                        <button className="btn btn-sm btn-buy"
+                          onClick={()=>navigate('trade',s.sym)}>Buy</button>
+                        <button
+                          style={{background:'none',border:'none',cursor:'pointer',
+                            color: inWatch?'var(--yellow)':'var(--t3)',fontSize:16,lineHeight:1}}
+                          onClick={()=>toggleWatch(s.sym)}
+                          title={inWatch?'Remove from watchlist':'Add to watchlist'}
+                        >
+                          {inWatch ? '★' : '☆'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {filtered.length === 0 && (
+          <div className="empty" style={{padding:'40px'}}>
+            <div className="empty-title">No stocks found</div>
+            <div className="empty-sub">Try adjusting your search or sector filter</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+window.Markets = Markets;
+
+  </script>
+
+  <!-- Trade -->
+  <script type="text/babel">
+// components/Trade.jsx
+const { useState, useEffect, useRef, useMemo } = React;
+
+function StockChart({ stock, livePrices }) {
+  const canvasRef = useRef(null);
+  const prices = useMemo(() => {
+    const lp = livePrices[stock.sym];
+    return window.genHistory(stock.sym, lp ? lp.ltp : stock.ltp);
+  }, [stock.sym]);
+  const isUp = prices[prices.length-1] >= prices[0];
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      window.drawPriceChart(canvasRef.current, prices, isUp);
+    }
+  }, [prices]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={560} height={200}
+      style={{width:'100%',height:200,borderRadius:'0 0 9px 9px'}}
+    />
+  );
+}
+
+function Trade({ livePrices, portfolio, credits, onOrderPlaced, navigate, initSym }) {
+  const [sym, setSym] = useState(initSym || 'RELIANCE');
+  const [searchQ, setSearchQ] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [side, setSide] = useState('BUY');
+  const [qty, setQty] = useState('1');
+  const [orderType, setOrderType] = useState('MARKET');
+  const [limitPrice, setLimitPrice] = useState('');
+
+  const stock = window.STOCK_MAP[sym] || window.ALL_STOCKS[0];
+  const lp    = livePrices[sym] || stock;
+  const price = lp.ltp;
+  const execPrice = orderType === 'LIMIT' && limitPrice ? parseFloat(limitPrice) : price;
+  const numQty    = parseInt(qty) || 0;
+  const total     = execPrice * numQty;
+  const margin    = total * 0.1;
+  const holding   = portfolio.find(h => h.sym === sym);
+  const isUp      = lp.pct >= 0;
+
+  const canBuy  = side === 'BUY'  && credits >= total && numQty > 0;
+  const canSell = side === 'SELL' && holding && holding.qty >= numQty && numQty > 0;
+
+  const searchResults = useMemo(() => {
+    if (!searchQ) return [];
+    const q = searchQ.toLowerCase();
+    return window.ALL_STOCKS.filter(s =>
+      s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [searchQ]);
+
+  function placeOrder() {
+    if (!onOrderPlaced) return;
+    onOrderPlaced({ sym, name: stock.name, side, qty: numQty, price: execPrice, orderType, sector: stock.sector });
+    setQty('1');
+  }
+
+  return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div>
+          <div className="ph-title">Trade</div>
+          <div className="ph-sub">Place paper orders · Credits-based simulation</div>
+        </div>
+      </div>
+
+      <div style={{display:'flex',gap:18,alignItems:'flex-start'}}>
+        {/* Left: stock info + chart */}
+        <div style={{flex:1,display:'flex',flexDirection:'column',gap:14,minWidth:0}}>
+
+          {/* Stock selector */}
+          <div style={{position:'relative'}}>
+            <div
+              className="card card-p"
+              style={{display:'flex',alignItems:'center',gap:14,cursor:'pointer',padding:'12px 16px'}}
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              <div style={{
+                width:40,height:40,borderRadius:10,
+                background:`${window.SECTOR_META[stock.sector]?.color||'var(--accent)'}22`,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontFamily:'var(--f-head)',fontWeight:700,fontSize:13,
+                color:window.SECTOR_META[stock.sector]?.color||'var(--accent)',flexShrink:0
+              }}>{sym.slice(0,2)}</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:'var(--f-head)',fontWeight:700,fontSize:16,color:'var(--t1)'}}>{sym}</div>
+                <div style={{fontSize:12,color:'var(--t2)'}}>{stock.name}</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontFamily:'var(--f-mono)',fontSize:22,fontWeight:700,color:'var(--t1)'}}>{fmtPrice(price)}</div>
+                <div className={isUp?'up':'down'} style={{fontFamily:'var(--f-mono)',fontSize:12}}>
+                  {isUp?'▲':'▼'} {Math.abs(lp.chg||0).toFixed(2)} ({Math.abs(lp.pct||0).toFixed(2)}%)
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{color:'var(--t3)'}}>
+                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {showSearch && (
+              <div style={{
+                position:'absolute',top:'100%',left:0,right:0,zIndex:100,
+                background:'var(--raised)',border:'1px solid var(--border2)',borderRadius:'0 0 9px 9px',
+                boxShadow:'0 12px 40px rgba(0,0,0,.6)'
+              }}>
+                <div style={{padding:'10px 14px',borderBottom:'1px solid var(--border)'}}>
+                  <input
+                    className="input"
+                    placeholder="Search symbol or company…"
+                    value={searchQ}
+                    onChange={e=>setSearchQ(e.target.value)}
+                    autoFocus
+                    style={{background:'var(--card)'}}
+                  />
+                </div>
+                {searchResults.length > 0
+                  ? searchResults.map(s => (
+                    <div key={s.sym}
+                      style={{
+                        display:'flex',justifyContent:'space-between',alignItems:'center',
+                        padding:'10px 16px',cursor:'pointer',transition:'background .1s',
+                        borderBottom:'1px solid var(--border)'
+                      }}
+                      onMouseEnter={e=>e.currentTarget.style.background='rgba(64,112,255,.06)'}
+                      onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+                      onClick={()=>{setSym(s.sym);setShowSearch(false);setSearchQ('');}}>
+                      <div>
+                        <span style={{fontFamily:'var(--f-head)',fontWeight:700,fontSize:13,color:'var(--t1)'}}>{s.sym}</span>
+                        <span style={{fontSize:12,color:'var(--t2)',marginLeft:8}}>{s.name}</span>
+                      </div>
+                      <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                        <span style={{fontFamily:'var(--f-mono)',fontSize:12}}>{fmtPrice(s.ltp)}</span>
+                        <span className={s.pct>=0?'up':'down'} style={{fontFamily:'var(--f-mono)',fontSize:11}}>{s.pct>=0?'+':''}{s.pct.toFixed(2)}%</span>
+                      </div>
+                    </div>
+                  ))
+                  : searchQ && <div style={{padding:'16px',color:'var(--t3)',textAlign:'center',fontSize:12}}>No results for "{searchQ}"</div>
+                }
+              </div>
+            )}
+          </div>
+
+          {/* Key stats row */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10}}>
+            {[
+              {label:'Open',       val: fmtPrice(price*0.993)},
+              {label:'High',       val: fmtPrice(price*1.012)},
+              {label:'Low',        val: fmtPrice(price*0.988)},
+              {label:'52W High',   val: fmtPrice(stock.h52)},
+              {label:'52W Low',    val: fmtPrice(stock.l52)},
+              {label:'Volume',     val: stock.vol},
+              {label:'Mkt Cap',    val: stock.cap},
+              {label:'P/E Ratio',  val: stock.pe ? stock.pe.toFixed(1) : '—'},
+              {label:'Sector',     val: stock.sector},
+              {label:'Holdings',   val: holding ? `${holding.qty} @ ${fmtPrice(holding.avgPrice)}` : '—'},
+            ].map(({label,val}) => (
+              <div key={label} style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'var(--r1)',padding:'9px 12px'}}>
+                <div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>{label}</div>
+                <div style={{fontFamily:'var(--f-mono)',fontSize:12.5,fontWeight:600,color:'var(--t1)'}}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart */}
+          <div className="card" style={{overflow:'hidden'}}>
+            <div className="card-head">
+              <span className="card-head-title">{sym} · 30-Day Price</span>
+              <span className={`badge ${isUp?'badge-g':'badge-r'}`}>{isUp?'▲ Uptrend':'▼ Downtrend'}</span>
+            </div>
+            <StockChart stock={stock} livePrices={livePrices} />
+          </div>
+        </div>
+
+        {/* Right: Order form */}
+        <div className="order-panel">
+          <div className="order-tabs">
+            {['BUY','SELL'].map(s => (
+              <button
+                key={s}
+                className={`order-tab ${s.toLowerCase()}${side===s?' active':''}`}
+                onClick={()=>setSide(s)}
+              >{s}</button>
+            ))}
+          </div>
+
+          <div className="order-body">
+            {/* Qty */}
+            <div className="form-group">
+              <label className="form-label">Quantity (shares)</label>
+              <div style={{display:'flex',gap:6}}>
+                <button className="btn btn-ghost btn-sm"
+                  onClick={()=>setQty(q=>Math.max(1,parseInt(q)||1)-1 + '')}>−</button>
+                <input className="input" type="number" min="1" value={qty}
+                  onChange={e=>setQty(e.target.value)} style={{textAlign:'center'}} />
+                <button className="btn btn-ghost btn-sm"
+                  onClick={()=>setQty(q=>(parseInt(q)||0)+1 + '')}>+</button>
+              </div>
+            </div>
+
+            {/* Order type */}
+            <div className="form-group">
+              <label className="form-label">Order Type</label>
+              <select className="input" value={orderType} onChange={e=>setOrderType(e.target.value)}>
+                <option value="MARKET">Market</option>
+                <option value="LIMIT">Limit</option>
+                <option value="SL">Stop Loss</option>
+              </select>
+            </div>
+
+            {/* Limit price */}
+            {orderType !== 'MARKET' && (
+              <div className="form-group">
+                <label className="form-label">{orderType === 'LIMIT' ? 'Limit Price (₹)' : 'Trigger Price (₹)'}</label>
+                <input className="input" type="number" placeholder={price.toFixed(2)}
+                  value={limitPrice} onChange={e=>setLimitPrice(e.target.value)} />
+              </div>
+            )}
+
+            {/* Summary */}
+            <div style={{background:'var(--raised)',border:'1px solid var(--border)',borderRadius:'var(--r1)',padding:'10px 14px'}}>
+              <div className="summary-row">
+                <span className="summary-key">Market Price</span>
+                <span className="summary-val">{fmtPrice(price)}</span>
+              </div>
+              {orderType !== 'MARKET' && (
+                <div className="summary-row">
+                  <span className="summary-key">{orderType === 'LIMIT' ? 'Limit' : 'Trigger'}</span>
+                  <span className="summary-val">{limitPrice ? fmtPrice(parseFloat(limitPrice)) : '—'}</span>
+                </div>
+              )}
+              <div className="summary-row">
+                <span className="summary-key">Qty × Price</span>
+                <span className="summary-val">{numQty} × {fmtPrice(execPrice)}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-key">Order Value</span>
+                <span className="summary-val" style={{color:'var(--t1)',fontSize:14}}>{fmtINR(total)}</span>
+              </div>
+              <div className="summary-row" style={{borderBottom:'none'}}>
+                <span className="summary-key">Margin (10%)</span>
+                <span className="summary-val">{fmtINR(margin)}</span>
+              </div>
+            </div>
+
+            {/* Credits */}
+            <div style={{
+              padding:'10px 14px',borderRadius:'var(--r1)',
+              background: (side==='BUY'&&!canBuy&&numQty>0) ? 'var(--red-d)' : 'var(--green-d)',
+              border:`1px solid ${(side==='BUY'&&!canBuy&&numQty>0)?'rgba(255,63,94,.2)':'rgba(0,212,140,.2)'}`
+            }}>
+              <div style={{fontSize:10.5,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:2}}>Available Credits</div>
+              <div style={{fontFamily:'var(--f-mono)',fontSize:16,fontWeight:700,color: (side==='BUY'&&!canBuy&&numQty>0)?'var(--red)':'var(--green)'}}>
+                {fmtINR(credits)}
+              </div>
+              {side==='BUY' && !canBuy && numQty>0 && (
+                <div style={{fontSize:11,color:'var(--red)',marginTop:3}}>Insufficient credits</div>
+              )}
+              {side==='SELL' && holding && (
+                <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>{holding.qty} shares held · Avg {fmtPrice(holding.avgPrice)}</div>
+              )}
+              {side==='SELL' && !holding && (
+                <div style={{fontSize:11,color:'var(--red)',marginTop:3}}>No position in {sym}</div>
+              )}
+            </div>
+
+            {/* Place order */}
+            <button
+              className={`btn btn-lg btn-full ${side==='BUY'?'btn-buy':'btn-sell'}`}
+              disabled={side==='BUY' ? !canBuy : !canSell}
+              onClick={placeOrder}
+            >
+              {side === 'BUY' ? `Buy ${numQty || '—'} ${sym}` : `Sell ${numQty || '—'} ${sym}`}
+            </button>
+
+            <div style={{fontSize:10.5,color:'var(--t3)',textAlign:'center',lineHeight:1.5}}>
+              Paper trading only · No real money involved · Credits reset anytime
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+window.Trade = Trade;
+
+  </script>
+
+  <!-- Portfolio -->
+  <script type="text/babel">
+// components/Portfolio.jsx
+const { useState, useMemo } = React;
+
+function SectorBar({ portfolio, livePrices }) {
+  const bySecVal = {};
+  portfolio.forEach(h => {
+    const lp = livePrices[h.sym];
+    const val = (lp ? lp.ltp : h.avgPrice) * h.qty;
+    bySecVal[h.sector] = (bySecVal[h.sector] || 0) + val;
+  });
+  const total = Object.values(bySecVal).reduce((a,b)=>a+b,0);
+  const entries = Object.entries(bySecVal).sort((a,b)=>b[1]-a[1]);
+
+  return (
+    <div className="card">
+      <div className="card-head">
+        <span className="card-head-title">Sector Allocation</span>
+      </div>
+      <div style={{padding:'16px 18px',display:'flex',flexDirection:'column',gap:10}}>
+        {entries.map(([sec, val]) => {
+          const pct = total>0 ? val/total*100 : 0;
+          const color = window.SECTOR_META[sec]?.color || 'var(--accent)';
+          return (
+            <div key={sec}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+                <span style={{fontSize:12,fontWeight:600,color:'var(--t2)',display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{width:7,height:7,borderRadius:'50%',background:color,display:'inline-block'}}></span>
+                  {sec}
+                </span>
+                <span style={{fontFamily:'var(--f-mono)',fontSize:12,color:'var(--t1)'}}>
+                  {fmtLarge(val)} <span style={{color:'var(--t3)'}}>{pct.toFixed(1)}%</span>
+                </span>
+              </div>
+              <div style={{height:4,background:'var(--raised)',borderRadius:2,overflow:'hidden'}}>
+                <div style={{width:`${pct}%`,height:'100%',background:color,borderRadius:2,transition:'width .4s ease'}}></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Portfolio({ portfolio, livePrices, onSell, navigate }) {
+  const [sortKey, setSortKey] = useState('pl');
+  const [sortDir, setSortDir] = useState(-1);
+  const [confirmSell, setConfirmSell] = useState(null);
+  const [sellQty, setSellQty] = useState('');
+
+  const rows = useMemo(() => portfolio.map(h => {
+    const lp = livePrices[h.sym];
+    const ltp     = lp ? lp.ltp : h.avgPrice;
+    const curVal  = ltp * h.qty;
+    const invVal  = h.avgPrice * h.qty;
+    const pl      = curVal - invVal;
+    const plPct   = invVal > 0 ? pl/invVal*100 : 0;
+    const dayPL   = lp ? lp.chg * h.qty : 0;
+    return {...h, ltp, curVal, invVal, pl, plPct, dayPL};
+  }).sort((a,b) => (a[sortKey]-b[sortKey])*sortDir), [portfolio, livePrices, sortKey, sortDir]);
+
+  const totalInv  = rows.reduce((s,h)=>s+h.invVal,0);
+  const totalCur  = rows.reduce((s,h)=>s+h.curVal,0);
+  const totalPL   = totalCur - totalInv;
+  const totalPLPct = totalInv>0 ? totalPL/totalInv*100 : 0;
+  const dayTotal  = rows.reduce((s,h)=>s+h.dayPL,0);
+
+  function handleSort(k) {
+    if (sortKey===k) setSortDir(d=>-d);
+    else { setSortKey(k); setSortDir(-1); }
+  }
+  function SortArrow({k}) {
+    return sortKey===k
+      ? <span style={{marginLeft:3,opacity:.8}}>{sortDir>0?'↑':'↓'}</span>
+      : <span style={{marginLeft:3,opacity:.2}}>↕</span>;
+  }
+
+  function doSell(holding) {
+    const qty = parseInt(sellQty);
+    if (!qty || qty < 1 || qty > holding.qty) return;
+    onSell(holding.sym, qty, holding.ltp);
+    setConfirmSell(null);
+    setSellQty('');
+  }
+
+  if (!portfolio.length) return (
+    <div className="page fade-up">
+      <div className="ph"><div className="ph-title">Portfolio</div></div>
+      <div className="empty" style={{marginTop:60}}>
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect x="6" y="14" width="36" height="28" rx="4" stroke="currentColor" strokeWidth="2"/>
+          <path d="M16 14v-4a8 8 0 0116 0v4" stroke="currentColor" strokeWidth="2"/>
+          <path d="M24 26v4M22 28h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+        <div className="empty-title">No holdings yet</div>
+        <div className="empty-sub">Start trading to build your paper portfolio</div>
+        <button className="btn btn-primary" onClick={()=>navigate('trade')}>Go to Trade</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div>
+          <div className="ph-title">Portfolio</div>
+          <div className="ph-sub">{portfolio.length} holdings · Paper account</div>
+        </div>
+        <button className="btn btn-primary" onClick={()=>navigate('compass')}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M10 6L7 8l3 2-1-2 1-2z" fill="currentColor"/>
+          </svg>
+          Portfolio Compass
+        </button>
+      </div>
+
+      {/* Header summary */}
+      <div className="port-header">
+        <div className="port-col">
+          <div className="port-col-label">Current Value</div>
+          <div className="port-col-val">{fmtLarge(totalCur)}</div>
+          <div className="port-col-sub muted">{portfolio.length} stocks</div>
+        </div>
+        <div className="port-col">
+          <div className="port-col-label">Total Invested</div>
+          <div className="port-col-val">{fmtLarge(totalInv)}</div>
+          <div className="port-col-sub muted">Cost basis</div>
+        </div>
+        <div className="port-col">
+          <div className="port-col-label">Total P&amp;L</div>
+          <div className={`port-col-val ${totalPL>=0?'up':'down'}`}>{fmtINR(totalPL)}</div>
+          <div className={`port-col-sub ${totalPL>=0?'up':'down'}`}>{fmtPct(totalPLPct)}</div>
+        </div>
+        <div className="port-col">
+          <div className="port-col-label">Today's P&amp;L</div>
+          <div className={`port-col-val ${dayTotal>=0?'up':'down'}`}>{fmtINR(dayTotal)}</div>
+          <div className="port-col-sub muted">Day change</div>
+        </div>
+      </div>
+
+      <div className="grid-2" style={{alignItems:'start'}}>
+        {/* Holdings table */}
+        <div className="card" style={{overflow:'hidden',gridColumn:'1/3'}}>
+          <div className="card-head">
+            <span className="card-head-title">Holdings</span>
+          </div>
+          <div style={{overflowX:'auto'}}>
+            <table className="dt">
+              <thead>
+                <tr>
+                  <th>Stock</th>
+                  <th onClick={()=>handleSort('qty')} style={{cursor:'pointer'}}>Qty <SortArrow k="qty"/></th>
+                  <th onClick={()=>handleSort('avgPrice')} style={{cursor:'pointer'}}>Avg Price <SortArrow k="avgPrice"/></th>
+                  <th>LTP</th>
+                  <th onClick={()=>handleSort('curVal')} style={{cursor:'pointer'}}>Curr Value <SortArrow k="curVal"/></th>
+                  <th onClick={()=>handleSort('pl')} style={{cursor:'pointer'}}>P&amp;L <SortArrow k="pl"/></th>
+                  <th onClick={()=>handleSort('plPct')} style={{cursor:'pointer'}}>P&amp;L % <SortArrow k="plPct"/></th>
+                  <th>Day P&amp;L</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(h => (
+                  <tr key={h.sym} onClick={()=>navigate('trade',h.sym)}>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{
+                          width:32,height:32,borderRadius:8,
+                          background:`${window.SECTOR_META[h.sector]?.color||'var(--accent)'}1A`,
+                          display:'flex',alignItems:'center',justifyContent:'center',
+                          fontFamily:'var(--f-head)',fontWeight:700,fontSize:11,
+                          color:window.SECTOR_META[h.sector]?.color||'var(--accent)',flexShrink:0
+                        }}>{h.sym.slice(0,2)}</div>
+                        <div>
+                          <div className="sym">{h.sym}</div>
+                          <div className="name-cell">{h.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="num">{h.qty}</td>
+                    <td className="num">{fmtPrice(h.avgPrice)}</td>
+                    <td className={`num ${h.ltp>h.avgPrice?'up':'down'}`}>{fmtPrice(h.ltp)}</td>
+                    <td className="num">{fmtINR(h.curVal)}</td>
+                    <td className={`num ${h.pl>=0?'up':'down'}`}>{h.pl>=0?'+':''}{fmtINR(h.pl)}</td>
+                    <td>
+                      <span className={`badge ${h.plPct>=0?'badge-g':'badge-r'}`}>
+                        {h.plPct>=0?'+':''}{h.plPct.toFixed(2)}%
+                      </span>
+                    </td>
+                    <td className={`num ${h.dayPL>=0?'up':'down'}`}>{h.dayPL>=0?'+':''}{fmtINR(h.dayPL)}</td>
+                    <td onClick={e=>e.stopPropagation()}>
+                      <button className="btn btn-sm btn-sell" onClick={()=>{setConfirmSell(h);setSellQty(String(h.qty));}}>
+                        Sell
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <SectorBar portfolio={portfolio} livePrices={livePrices} />
+      </div>
+
+      {/* Sell modal */}
+      {confirmSell && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200}}>
+          <div style={{background:'var(--raised)',border:'1px solid var(--border2)',borderRadius:'var(--r3)',padding:28,width:340}}>
+            <div style={{fontFamily:'var(--f-head)',fontSize:17,fontWeight:700,marginBottom:4}}>Sell {confirmSell.sym}</div>
+            <div style={{fontSize:12.5,color:'var(--t2)',marginBottom:20}}>You hold {confirmSell.qty} shares · Avg {fmtPrice(confirmSell.avgPrice)}</div>
+            <div className="form-group" style={{marginBottom:16}}>
+              <label className="form-label">Quantity to Sell</label>
+              <input className="input" type="number" min="1" max={confirmSell.qty} value={sellQty} onChange={e=>setSellQty(e.target.value)} />
+            </div>
+            <div style={{background:'var(--card)',borderRadius:'var(--r1)',padding:'12px 14px',marginBottom:18}}>
+              <div className="summary-row">
+                <span className="summary-key">Sell Qty</span>
+                <span className="summary-val">{sellQty || '—'}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-key">At Price</span>
+                <span className="summary-val">{fmtPrice(confirmSell.ltp)}</span>
+              </div>
+              <div className="summary-row" style={{borderBottom:'none'}}>
+                <span className="summary-key">Proceeds</span>
+                <span className="summary-val up">{fmtINR(confirmSell.ltp * (parseInt(sellQty)||0))}</span>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button className="btn btn-ghost btn-full" onClick={()=>setConfirmSell(null)}>Cancel</button>
+              <button className="btn btn-sell btn-full" onClick={()=>doSell(confirmSell)}>Confirm Sell</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+window.Portfolio = Portfolio;
+
+  </script>
+
+  <!-- Compass -->
+  <script type="text/babel">
+// components/Compass.jsx
+const { useState, useEffect, useRef, useMemo } = React;
+
+function CompassChart({ result }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && result) window.drawMCChart(ref.current, result);
+  }, [result]);
+  if (!result) return null;
+  return (
+    <canvas ref={ref} width={820} height={340}
+      style={{width:'100%',height:340,borderRadius:'0 0 9px 9px'}} />
+  );
+}
+
+function AllocationDonut({ sectorAlloc }) {
+  const ref = useRef(null);
+  const total = Object.values(sectorAlloc).reduce((a,b)=>a+b,0);
+  const entries = Object.entries(sectorAlloc).sort((a,b)=>b[1]-a[1]);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || total === 0) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 16, inner = r*0.56;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0F1E38'; ctx.fillRect(0,0,W,H);
+    let angle = -Math.PI/2;
+    entries.forEach(([sec, val]) => {
+      const slice = (val/total)*2*Math.PI;
+      const color = window.SECTOR_META[sec]?.color || '#4070FF';
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,angle,angle+slice);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      angle += slice;
+    });
+    // Inner hole
+    ctx.beginPath();
+    ctx.arc(cx,cy,inner,0,2*Math.PI);
+    ctx.fillStyle='#0F1E38';
+    ctx.fill();
+    // Center text
+    ctx.fillStyle='#7090B8'; ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Allocation', cx, cy-4);
+    ctx.fillStyle='#DDE8F8'; ctx.font='bold 12px Space Grotesk,sans-serif';
+    ctx.fillText(`${entries.length} sectors`, cx, cy+12);
+  }, [sectorAlloc]);
+
+  return (
+    <div style={{display:'flex',gap:16,alignItems:'flex-start'}}>
+      <canvas ref={ref} width={160} height={160} style={{flexShrink:0}} />
+      <div style={{flex:1,display:'flex',flexDirection:'column',gap:7,paddingTop:8}}>
+        {entries.map(([sec, val]) => {
+          const pct = total>0 ? val/total*100 : 0;
+          const color = window.SECTOR_META[sec]?.color || '#4070FF';
+          return (
+            <div key={sec} style={{display:'flex',alignItems:'center',gap:7}}>
+              <span style={{width:8,height:8,borderRadius:'50%',background:color,flexShrink:0}}></span>
+              <span style={{fontSize:11.5,color:'var(--t2)',flex:1}}>{sec}</span>
+              <span style={{fontFamily:'var(--f-mono)',fontSize:11,color:'var(--t1)'}}>{pct.toFixed(1)}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Compass({ portfolio, livePrices }) {
+  const [profile, setProfile] = useState('moderate');
+  const [result, setResult]   = useState(null);
+  const [running, setRunning] = useState(false);
+
+  const profiles = [
+    { id:'conservative', label:'Conservative', hint:'Low risk, ~12% annual return' },
+    { id:'moderate',     label:'Moderate',     hint:'Balanced, ~15% annual return' },
+    { id:'aggressive',   label:'Aggressive',   hint:'High risk, ~20% annual return' },
+  ];
+
+  function runSim() {
+    if (portfolio.length === 0) return;
+    setRunning(true);
+    setTimeout(() => {
+      const r = window.runMonteCarlo(portfolio, livePrices, profile, 1000);
+      setResult(r);
+      setRunning(false);
+    }, 60);
+  }
+
+  const hasPortfolio = portfolio.length > 0;
+  const initVal = result ? result.initialValue : (
+    portfolio.reduce((s,h) => s + (livePrices[h.sym]?.ltp || h.avgPrice)*h.qty, 0)
+  );
+
+  return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div>
+          <div className="ph-title">Portfolio Compass</div>
+          <div className="ph-sub">Monte Carlo 5-year projection · 1,000 simulations · GBM model</div>
+        </div>
+        {hasPortfolio && (
+          <button className="btn btn-primary btn-lg" onClick={runSim} disabled={running}>
+            {running
+              ? <><span className="pulse">⟳</span> Simulating…</>
+              : <>▶ Run Simulation</>}
+          </button>
+        )}
+      </div>
+
+      {!hasPortfolio && (
+        <div className="empty" style={{marginTop:60}}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2"/>
+            <path d="M24 10v4M24 34v4M10 24h4M34 24h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M30 18L22 24l8 6-2-6 2-6z" fill="currentColor"/>
+          </svg>
+          <div className="empty-title">No portfolio to analyse</div>
+          <div className="empty-sub">Add holdings via Trade to run your Compass projection</div>
+        </div>
+      )}
+
+      {hasPortfolio && (
+        <>
+          {/* Risk profile */}
+          <div className="card card-p">
+            <div style={{fontSize:12,color:'var(--t2)',marginBottom:12,fontWeight:500,textTransform:'uppercase',letterSpacing:'.5px'}}>Risk Profile</div>
+            <div style={{display:'flex',gap:10,marginBottom:12}}>
+              {profiles.map(p => (
+                <button key={p.id} className={`risk-btn${profile===p.id?' active':''}`} onClick={()=>setProfile(p.id)}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <div style={{fontSize:12,color:'var(--t3)'}}>
+              {profiles.find(p=>p.id===profile)?.hint} · Based on NSE sector historical data · Simulated via Geometric Brownian Motion
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="card" style={{overflow:'hidden'}}>
+            <div className="card-head">
+              <span className="card-head-title">5-Year Projection — {profile.charAt(0).toUpperCase()+profile.slice(1)} Profile</span>
+              {result && <span className="badge badge-b">1,000 runs complete</span>}
+            </div>
+            {!result && !running && (
+              <div className="empty" style={{padding:'60px 24px'}}>
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <path d="M4 32L14 18l8 8 14-16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="36" cy="10" r="4" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+                <div className="empty-sub">Click "Run Simulation" to generate your 5-year projection</div>
+              </div>
+            )}
+            {running && (
+              <div className="empty" style={{padding:'60px 24px'}}>
+                <div style={{fontFamily:'var(--f-mono)',fontSize:13,color:'var(--accent)',animation:'pulse 1s infinite'}}>
+                  Running 1,000 Monte Carlo paths…
+                </div>
+                <div style={{width:200,height:3,background:'var(--raised)',borderRadius:2,marginTop:12,overflow:'hidden'}}>
+                  <div style={{height:'100%',background:'var(--accent)',borderRadius:2,animation:'shimmer 1s infinite',backgroundSize:'200% 100%',backgroundImage:'linear-gradient(90deg,var(--accent) 40%,#7BA7FF 50%,var(--accent) 60%)'}}></div>
+                </div>
+              </div>
+            )}
+            {result && <CompassChart result={result} />}
+          </div>
+
+          {/* Stats + Allocation */}
+          {result && (
+            <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:18,alignItems:'start'}}>
+              <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                <div className="stats-grid">
+                  {[
+                    {
+                      label:'Expected Value (P50)',
+                      val: fmtLarge(result.stats.median),
+                      sub: `+${fmtPct((result.stats.median/initVal-1)*100)} from today`,
+                      color:'var(--accent)', up:true
+                    },
+                    {
+                      label:'Best Case (P90)',
+                      val: fmtLarge(result.stats.best),
+                      sub: `+${fmtPct((result.stats.best/initVal-1)*100)} bull scenario`,
+                      color:'var(--green)', up:true
+                    },
+                    {
+                      label:'Worst Case (P10)',
+                      val: fmtLarge(result.stats.worst),
+                      sub: `${fmtPct((result.stats.worst/initVal-1)*100)} bear scenario`,
+                      color: result.stats.worst < initVal ? 'var(--red)' : 'var(--green)',
+                      up: result.stats.worst >= initVal
+                    },
+                    {
+                      label:'Value at Risk (5%)',
+                      val: fmtLarge(result.stats.var5),
+                      sub: `${fmtPct((result.stats.var5/initVal-1)*100)} downside`,
+                      color: result.stats.var5 < initVal ? 'var(--red)' : 'var(--t1)',
+                      up: result.stats.var5 >= initVal
+                    },
+                    {
+                      label:'Probability of Profit',
+                      val: `${result.probProfit.toFixed(1)}%`,
+                      sub: `${(100-result.probProfit).toFixed(1)}% chance of loss`,
+                      color: result.probProfit >= 50 ? 'var(--green)' : 'var(--red)',
+                      up: result.probProfit >= 50
+                    },
+                    {
+                      label:'Expected CAGR',
+                      val: `${result.stats.cagr.toFixed(1)}%`,
+                      sub: `Compounded annual growth rate`,
+                      color: result.stats.cagr >= 0 ? 'var(--green)' : 'var(--red)',
+                      up: result.stats.cagr >= 0
+                    },
+                  ].map(s => (
+                    <div key={s.label} className="stat-mini">
+                      <div className="stat-mini-label">{s.label}</div>
+                      <div className="stat-mini-val" style={{color:s.color}}>{s.val}</div>
+                      <div className="stat-mini-sub">{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Assumptions */}
+                <div style={{background:'var(--raised)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'14px 16px',fontSize:12,color:'var(--t3)',lineHeight:1.7}}>
+                  <strong style={{color:'var(--t2)',display:'block',marginBottom:4}}>Model Assumptions</strong>
+                  Geometric Brownian Motion (GBM) · {result.wMu.toFixed(1)*100|0}% expected annual return ·{' '}
+                  {result.wSigma.toFixed(2)*100|0}% annual volatility · NSE sector-weighted parameters ·
+                  Monthly time steps (60) · 1,000 independent paths · No dividends or rebalancing assumed
+                </div>
+              </div>
+
+              {/* Donut */}
+              <div className="card card-p">
+                <div style={{fontSize:12,color:'var(--t2)',fontWeight:600,marginBottom:14}}>Portfolio Allocation</div>
+                <AllocationDonut sectorAlloc={result.sectorAlloc} />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+window.Compass = Compass;
+
+  </script>
+
+  <!-- Orders -->
+  <script type="text/babel">
+// components/Orders.jsx
+const { useState, useMemo } = React;
+
+function Orders({ orders, navigate }) {
+  const [tab, setTab] = useState('ALL');
+  const tabs = ['ALL','OPEN','EXECUTED','CANCELLED'];
+
+  const filtered = useMemo(() => {
+    if (tab === 'ALL') return orders;
+    return orders.filter(o => o.status === tab);
+  }, [orders, tab]);
+
+  if (!orders.length) return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div className="ph-title">Orders</div>
+      </div>
+      <div className="empty" style={{marginTop:60}}>
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" strokeWidth="2"/>
+          <path d="M16 14h16M16 22h16M16 30h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+        <div className="empty-title">No orders yet</div>
+        <div className="empty-sub">Place your first order in the Trade screen</div>
+        <button className="btn btn-primary" onClick={()=>navigate('trade')}>Start Trading</button>
+      </div>
+    </div>
+  );
+
+  const countByTab = { ALL: orders.length };
+  orders.forEach(o => { countByTab[o.status] = (countByTab[o.status]||0)+1; });
+
+  return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div>
+          <div className="ph-title">Orders</div>
+          <div className="ph-sub">{orders.length} total · Paper account</div>
+        </div>
+      </div>
+
+      <div className="tabs">
+        {tabs.map(t => (
+          <button key={t} className={`tab${tab===t?' active':''}`} onClick={()=>setTab(t)}>
+            {t}
+            {countByTab[t] > 0 &&
+              <span style={{
+                marginLeft:5,padding:'1px 5px',borderRadius:10,
+                background:tab===t?'rgba(64,112,255,.3)':'rgba(112,144,184,.12)',
+                color:tab===t?'var(--accent)':'var(--t3)',
+                fontSize:10,fontWeight:700
+              }}>{countByTab[t]}</span>
+            }
+          </button>
+        ))}
+      </div>
+
+      <div className="card" style={{overflow:'hidden'}}>
+        <div style={{overflowX:'auto'}}>
+          <table className="dt">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Symbol</th>
+                <th>Type</th>
+                <th>Order</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Value</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(o => (
+                <tr key={o.id} onClick={()=>navigate('trade',o.sym)}>
+                  <td className="muted" style={{fontSize:12}}>{o.time}</td>
+                  <td>
+                    <div className="sym">{o.sym}</div>
+                    <div className="name-cell">{o.name}</div>
+                  </td>
+                  <td>
+                    <span className={`badge ${o.side==='BUY'?'badge-g':'badge-r'}`}>
+                      {o.side}
+                    </span>
+                  </td>
+                  <td className="muted" style={{fontSize:12}}>{o.orderType}</td>
+                  <td className="num">{o.qty}</td>
+                  <td className="num">{fmtPrice(o.price)}</td>
+                  <td className="num" style={{fontWeight:600}}>{fmtINR(o.price * o.qty)}</td>
+                  <td>
+                    {o.status === 'EXECUTED'   && <span className="badge badge-g">EXECUTED</span>}
+                    {o.status === 'OPEN'        && <span className="badge badge-y">OPEN</span>}
+                    {o.status === 'CANCELLED'   && <span className="badge badge-n">CANCELLED</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="empty" style={{padding:'36px'}}>
+            <div className="empty-title">No {tab.toLowerCase()} orders</div>
+          </div>
+        )}
+      </div>
+
+      {/* Summary row */}
+      {filtered.length > 0 && (
+        <div style={{display:'flex',gap:16}}>
+          {[
+            {label:'Total Orders', val: filtered.length},
+            {label:'Buy Orders',   val: filtered.filter(o=>o.side==='BUY').length,  color:'var(--green)'},
+            {label:'Sell Orders',  val: filtered.filter(o=>o.side==='SELL').length, color:'var(--red)'},
+            {label:'Total Volume', val: fmtINR(filtered.reduce((s,o)=>s+o.price*o.qty,0))},
+          ].map(({label,val,color}) => (
+            <div key={label} className="stat-card" style={{flex:1}}>
+              <div className="stat-label">{label}</div>
+              <div className="stat-val" style={color?{color}:{}}>{val}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+window.Orders = Orders;
+
+  </script>
+
+  <!-- Watchlist -->
+  <script type="text/babel">
+// components/Watchlist.jsx
+const { useState } = React;
+
+function Watchlist({ watchlist, setWatchlist, livePrices, navigate }) {
+  const stocks = watchlist.map(sym => {
+    const s = window.STOCK_MAP[sym];
+    if (!s) return null;
+    const lp = livePrices[sym];
+    return { ...s, ltp: lp ? lp.ltp : s.ltp, chg: lp ? lp.chg : s.chg, pct: lp ? lp.pct : s.pct };
+  }).filter(Boolean);
+
+  if (!watchlist.length) return (
+    <div className="page fade-up">
+      <div className="ph"><div className="ph-title">Watchlist</div></div>
+      <div className="empty" style={{marginTop:60}}>
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <path d="M24 6l4.9 10.2L40 17.8l-8 7.9 1.9 11.1L24 31.3l-9.9 5.5 1.9-11.1-8-7.9 11.1-1.6L24 6z"
+            stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        </svg>
+        <div className="empty-title">Your watchlist is empty</div>
+        <div className="empty-sub">Star stocks in the Markets screen to add them here</div>
+        <button className="btn btn-primary" onClick={()=>navigate('markets')}>Browse Markets</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="page fade-up">
+      <div className="ph">
+        <div>
+          <div className="ph-title">Watchlist</div>
+          <div className="ph-sub">{watchlist.length} stocks tracked</div>
+        </div>
+      </div>
+
+      <div className="card" style={{overflow:'hidden'}}>
+        <table className="dt">
+          <thead>
+            <tr>
+              <th>Stock</th>
+              <th>LTP</th>
+              <th>Change</th>
+              <th>Chg%</th>
+              <th>Volume</th>
+              <th>Mkt Cap</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {stocks.map(s => (
+              <tr key={s.sym} onClick={()=>navigate('trade',s.sym)}>
+                <td>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <div style={{
+                      width:32,height:32,borderRadius:8,flexShrink:0,
+                      background:`${window.SECTOR_META[s.sector]?.color||'var(--accent)'}1A`,
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontFamily:'var(--f-head)',fontWeight:700,fontSize:11,
+                      color:window.SECTOR_META[s.sector]?.color||'var(--accent)'
+                    }}>{s.sym.slice(0,2)}</div>
+                    <div>
+                      <div className="sym">{s.sym}</div>
+                      <div className="name-cell">{s.name}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="num" style={{fontWeight:600}}>{fmtPrice(s.ltp)}</td>
+                <td className={`num ${s.chg>=0?'up':'down'}`}>{s.chg>=0?'+':''}{s.chg.toFixed(2)}</td>
+                <td><span className={`badge ${s.pct>=0?'badge-g':'badge-r'}`}>{s.pct>=0?'▲':'▼'} {Math.abs(s.pct).toFixed(2)}%</span></td>
+                <td className="num muted">{s.vol}</td>
+                <td className="num muted">{s.cap}</td>
+                <td onClick={e=>e.stopPropagation()}>
+                  <div style={{display:'flex',gap:6}}>
+                    <button className="btn btn-sm btn-buy" onClick={()=>navigate('trade',s.sym)}>Buy</button>
+                    <button
+                      style={{background:'none',border:'none',cursor:'pointer',color:'var(--yellow)',fontSize:16,lineHeight:1,padding:'4px'}}
+                      onClick={()=>setWatchlist(w=>w.filter(x=>x!==s.sym))}
+                      title="Remove from watchlist"
+                    >★</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+window.Watchlist = Watchlist;
+
+  </script>
+
+  <!-- App root -->
+  <script type="text/babel">
+// App.jsx — Main application root
+const { useState, useEffect, useRef, useCallback } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent":   "#4070FF",
+  "credits":  "1000000",
+  "speed":    3000
+}/*EDITMODE-END*/;
+
+const DEMO_PORTFOLIO = [
+  { sym:'TCS',        name:'Tata Consultancy Svcs',  qty:10, avgPrice:3750.00, sector:'IT'      },
+  { sym:'RELIANCE',   name:'Reliance Industries',     qty:15, avgPrice:2850.00, sector:'ENERGY'  },
+  { sym:'HDFCBANK',   name:'HDFC Bank Ltd',           qty:20, avgPrice:1680.00, sector:'BANKING' },
+  { sym:'INFY',       name:'Infosys Ltd',             qty:25, avgPrice:1820.00, sector:'IT'      },
+  { sym:'SUNPHARMA',  name:'Sun Pharmaceutical',      qty:8,  avgPrice:1580.00, sector:'PHARMA'  },
+];
+
+function buildLivePrices() {
+  const prices = {};
+  window.ALL_STOCKS.forEach(s => {
+    prices[s.sym] = { ltp: s.ltp, chg: s.chg, pct: s.pct, basePrice: s.ltp };
+  });
+  return prices;
+}
+
+function Topbar({ livePrices, page, navigate, setSearch }) {
+  const [time, setTime] = useState('');
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const d = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      const t = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      setTime(`${d}  ${t}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  function handleSearch(val) {
+    setQ(val);
+    if (!val.trim()) { setResults([]); return; }
+    const lower = val.toLowerCase();
+    setResults(
+      window.ALL_STOCKS
+        .filter(s => s.sym.toLowerCase().includes(lower) || s.name.toLowerCase().includes(lower))
+        .slice(0,6)
+    );
+  }
+
+  const niftyVal = livePrices['HDFCBANK']
+    ? (24835.40 * (1 + (livePrices['HDFCBANK'].pct * 0.4 / 100))).toFixed(2)
+    : '24835.40';
+  const niftyUp = parseFloat(niftyVal) >= 24835.40;
+
+  return (
+    <div className="topbar">
+      {/* Search */}
+      <div className="topbar-search" style={{position:'relative'}}>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="var(--t3)" strokeWidth="1.5"/>
+          <path d="M11 11l3 3" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <input
+          placeholder="Search any NSE stock…"
+          value={q}
+          onChange={e => handleSearch(e.target.value)}
+          onBlur={() => setTimeout(()=>setResults([]),150)}
+        />
+        {results.length > 0 && (
+          <div style={{
+            position:'absolute',top:'calc(100% + 6px)',left:0,right:0,
+            background:'var(--raised)',border:'1px solid var(--border2)',
+            borderRadius:'var(--r2)',zIndex:200,
+            boxShadow:'0 12px 40px rgba(0,0,0,.6)',overflow:'hidden'
+          }}>
+            {results.map(s => {
+              const lp = livePrices[s.sym] || s;
+              return (
+                <div key={s.sym}
+                  style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                    padding:'9px 14px',cursor:'pointer',borderBottom:'1px solid var(--border)'}}
+                  onMouseDown={()=>{ navigate('trade',s.sym); setQ(''); setResults([]); }}>
+                  <div>
+                    <span style={{fontFamily:'var(--f-head)',fontWeight:700,fontSize:13,color:'var(--t1)'}}>{s.sym}</span>
+                    <span style={{fontSize:12,color:'var(--t2)',marginLeft:8}}>{s.name}</span>
+                  </div>
+                  <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                    <span style={{fontFamily:'var(--f-mono)',fontSize:12}}>{fmtPrice(lp.ltp)}</span>
+                    <span className={lp.pct>=0?'up':'down'} style={{fontFamily:'var(--f-mono)',fontSize:11}}>{lp.pct>=0?'+':''}{lp.pct.toFixed(2)}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* NIFTY pill */}
+      <div style={{
+        display:'flex',alignItems:'center',gap:7,padding:'5px 12px',
+        borderRadius:'var(--r1)',background:'var(--raised)',border:'1px solid var(--border2)',
+      }}>
+        <span style={{fontSize:10.5,color:'var(--t3)',fontWeight:600,letterSpacing:'.4px'}}>NIFTY 50</span>
+        <span style={{fontFamily:'var(--f-mono)',fontSize:12.5,fontWeight:700,color:'var(--t1)'}}>{parseFloat(niftyVal).toLocaleString('en-IN',{minimumFractionDigits:2})}</span>
+        <span className={niftyUp?'up':'down'} style={{fontFamily:'var(--f-mono)',fontSize:11}}>
+          {niftyUp?'▲':'▼'} {Math.abs((parseFloat(niftyVal)-24835.40)).toFixed(2)}
+        </span>
+      </div>
+
+      <div className="topbar-right">
+        <span className="topbar-time">{time}</span>
+        <div className="topbar-btn" title="Notifications">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2a5 5 0 015 5v3l1 2H2l1-2V7a5 5 0 015-5z" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M6.5 13.5a1.5 1.5 0 003 0" stroke="currentColor" strokeWidth="1.4"/>
+          </svg>
+        </div>
+        <div className="avatar" title="Demo User">U</div>
+      </div>
+    </div>
+  );
+}
+
+function Toast({ toasts }) {
+  return (
+    <div className="toast-wrap">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast toast-${t.type}`}>
+          <span>{t.type==='g'?'✓':t.type==='r'?'✕':'ℹ'}</span>
+          <span>{t.msg}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [t, setTweak]   = useTweaks(TWEAK_DEFAULTS);
+  const [page, setPage] = useState('dashboard');
+  const [tradeSym, setTradeSym]   = useState('RELIANCE');
+  const [marketSector, setMarketSector] = useState('ALL');
+
+  const [credits,   setCredits]   = useState(() => {
+    const s = localStorage.getItem('bzr_credits');
+    return s ? parseFloat(s) : parseFloat(TWEAK_DEFAULTS.credits);
+  });
+  const [portfolio, setPortfolio] = useState(() => {
+    const s = localStorage.getItem('bzr_portfolio');
+    return s ? JSON.parse(s) : DEMO_PORTFOLIO;
+  });
+  const [orders,    setOrders]    = useState(() => {
+    const s = localStorage.getItem('bzr_orders');
+    return s ? JSON.parse(s) : [];
+  });
+  const [watchlist, setWatchlist] = useState(() => {
+    const s = localStorage.getItem('bzr_watchlist');
+    return s ? JSON.parse(s) : ['TCS','RELIANCE','HDFCBANK','INFY','BHARTIARTL'];
+  });
+  const [livePrices, setLivePrices] = useState(buildLivePrices);
+  const [toasts, setToasts] = useState([]);
+
+  // Persist state
+  useEffect(() => { localStorage.setItem('bzr_credits', credits); }, [credits]);
+  useEffect(() => { localStorage.setItem('bzr_portfolio', JSON.stringify(portfolio)); }, [portfolio]);
+  useEffect(() => { localStorage.setItem('bzr_orders', JSON.stringify(orders)); }, [orders]);
+  useEffect(() => { localStorage.setItem('bzr_watchlist', JSON.stringify(watchlist)); }, [watchlist]);
+
+  // Apply accent color tweak
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', t.accent);
+  }, [t.accent]);
+
+  // Live price simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLivePrices(prev => {
+        const next = {};
+        Object.keys(prev).forEach(sym => {
+          const d = prev[sym];
+          const drift = (Math.random() - 0.49) * d.ltp * 0.0018;
+          const newLtp = Math.max(d.ltp * 0.5, d.ltp + drift);
+          const newChg = newLtp - d.basePrice;
+          const newPct = newChg / d.basePrice * 100;
+          next[sym] = { ...d, ltp: newLtp, chg: newChg, pct: newPct };
+        });
+        return next;
+      });
+    }, t.speed || 3000);
+    return () => clearInterval(interval);
+  }, [t.speed]);
+
+  function addToast(msg, type='g') {
+    const id = Date.now();
+    setToasts(prev => [...prev, {id,msg,type}]);
+    setTimeout(() => setToasts(prev => prev.filter(t=>t.id!==id)), 3200);
+  }
+
+  function navigate(dest, param) {
+    if (dest === 'trade')   { setTradeSym(param || 'RELIANCE'); setPage('trade'); }
+    else if (dest === 'markets') { setMarketSector(param || 'ALL'); setPage('markets'); }
+    else if (dest === 'compass') { setPage('compass'); }
+    else setPage(dest);
+  }
+
+  function onOrderPlaced({ sym, name, side, qty, price, orderType, sector }) {
+    const value = price * qty;
+    const now   = new Date();
+    const time  = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+                + ' ' + now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+
+    const order = { id: Date.now(), time, sym, name, side, qty, price, orderType, sector, status:'EXECUTED' };
+    setOrders(prev => [order, ...prev]);
+
+    if (side === 'BUY') {
+      setCredits(c => c - value);
+      setPortfolio(prev => {
+        const existing = prev.find(h => h.sym === sym);
+        if (existing) {
+          return prev.map(h => h.sym === sym ? {
+            ...h,
+            qty: h.qty + qty,
+            avgPrice: (h.avgPrice * h.qty + price * qty) / (h.qty + qty)
+          } : h);
+        }
+        return [...prev, { sym, name, qty, avgPrice: price, sector }];
+      });
+      addToast(`Bought ${qty} ${sym} @ ${fmtPrice(price)}`, 'g');
+    } else {
+      const proceeds = value;
+      setCredits(c => c + proceeds);
+      setPortfolio(prev => {
+        return prev.map(h => {
+          if (h.sym !== sym) return h;
+          const newQty = h.qty - qty;
+          return newQty <= 0 ? null : { ...h, qty: newQty };
+        }).filter(Boolean);
+      });
+      addToast(`Sold ${qty} ${sym} @ ${fmtPrice(price)}`, 'r');
+    }
+    navigate('orders');
+  }
+
+  function onSell(sym, qty, price) {
+    onOrderPlaced({
+      sym, name: (window.STOCK_MAP[sym]||{}).name||sym,
+      side:'SELL', qty, price, orderType:'MARKET',
+      sector: (window.STOCK_MAP[sym]||{}).sector||'IT'
+    });
+  }
+
+  const openOrderCount = orders.filter(o=>o.status==='OPEN').length;
+
+  function renderPage() {
+    switch (page) {
+      case 'dashboard':
+        return <Dashboard livePrices={livePrices} portfolio={portfolio} credits={credits} navigate={navigate} />;
+      case 'markets':
+        return <Markets livePrices={livePrices} watchlist={watchlist} setWatchlist={setWatchlist} navigate={navigate} initialSector={marketSector} />;
+      case 'trade':
+        return <Trade livePrices={livePrices} portfolio={portfolio} credits={credits} onOrderPlaced={onOrderPlaced} navigate={navigate} initSym={tradeSym} />;
+      case 'portfolio':
+        return <Portfolio portfolio={portfolio} livePrices={livePrices} onSell={onSell} navigate={navigate} />;
+      case 'compass':
+        return <Compass portfolio={portfolio} livePrices={livePrices} />;
+      case 'orders':
+        return <Orders orders={orders} navigate={navigate} />;
+      case 'watchlist':
+        return <Watchlist watchlist={watchlist} setWatchlist={setWatchlist} livePrices={livePrices} navigate={navigate} />;
+      default:
+        return <Dashboard livePrices={livePrices} portfolio={portfolio} credits={credits} navigate={navigate} />;
+    }
+  }
+
+  return (
+    <div id="app">
+      <Sidebar
+        page={page} setPage={setPage} credits={credits}
+        portfolio={portfolio} livePrices={livePrices}
+        openOrders={openOrderCount}
+      />
+      <div className="main">
+        <Topbar livePrices={livePrices} page={page} navigate={navigate} />
+        {renderPage()}
+      </div>
+      <Toast toasts={toasts} />
+      <TweaksPanel>
+        <TweakSection label="Appearance" />
+        <TweakColor label="Accent colour" value={t.accent}
+          options={['#4070FF','#00C896','#A855F7','#F97316']}
+          onChange={v=>setTweak('accent',v)} />
+        <TweakSection label="Account" />
+        <TweakSelect label="Starting Credits" value={t.credits}
+          options={[
+            {label:'₹5 Lakh',  value:'500000'},
+            {label:'₹10 Lakh', value:'1000000'},
+            {label:'₹25 Lakh', value:'2500000'},
+            {label:'₹50 Lakh', value:'5000000'},
+          ]}
+          onChange={v=>{ setTweak('credits',v); setCredits(parseFloat(v)); }} />
+        <TweakButton label="Reset Portfolio" onClick={()=>{ setPortfolio(DEMO_PORTFOLIO); addToast('Portfolio reset to demo','b'); }} />
+        <TweakButton label="Clear All Orders"  onClick={()=>{ setOrders([]);     addToast('Orders cleared','b'); }} />
+        <TweakSection label="Market Feed" />
+        <TweakSelect label="Price update speed" value={String(t.speed)}
+          options={[
+            {label:'Slow (5s)',   value:'5000'},
+            {label:'Normal (3s)', value:'3000'},
+            {label:'Fast (1s)',   value:'1000'},
+          ]}
+          onChange={v=>setTweak('speed',parseInt(v))} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+  </script>
+</body>
+</html>
