@@ -710,6 +710,69 @@ window.drawPriceChart = function(canvas, prices, isUp) {
   ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH); ctx.stroke();
 };
 
+/* ─── Yahoo Finance symbol map (NSE → YF) ────────────────────────────────── */
+window.YF_SYMBOLS = {
+  'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','HCLTECH':'HCLTECH.NS',
+  'TECHM':'TECHM.NS','LTIM':'LTIM.NS','MPHASIS':'MPHASIS.NS','PERSISTENT':'PERSISTENT.NS',
+  'HDFCBANK':'HDFCBANK.NS','ICICIBANK':'ICICIBANK.NS','SBIN':'SBIN.NS',
+  'KOTAKBANK':'KOTAKBANK.NS','AXISBANK':'AXISBANK.NS','INDUSINDBK':'INDUSINDBK.NS',
+  'BANKBARODA':'BANKBARODA.NS','PNB':'PNB.NS',
+  'SUNPHARMA':'SUNPHARMA.NS','DRREDDY':'DRREDDY.NS','CIPLA':'CIPLA.NS',
+  'DIVISLAB':'DIVISLAB.NS','APOLLOHOSP':'APOLLOHOSP.NS','LUPIN':'LUPIN.NS',
+  'MARUTI':'MARUTI.NS','TATAMOTORS':'TATAMOTORS.NS','BAJAJ-AUTO':'BAJAJ-AUTO.NS',
+  'M&M':'M%26M.NS','HEROMOTOCO':'HEROMOTOCO.NS','EICHERMOT':'EICHERMOT.NS',
+  'HINDUNILVR':'HINDUNILVR.NS','ITC':'ITC.NS','NESTLEIND':'NESTLEIND.NS',
+  'BRITANNIA':'BRITANNIA.NS','DABUR':'DABUR.NS','MARICO':'MARICO.NS',
+  'RELIANCE':'RELIANCE.NS','ONGC':'ONGC.NS','COALINDIA':'COALINDIA.NS',
+  'NTPC':'NTPC.NS','POWERGRID':'POWERGRID.NS','ADANIGREEN':'ADANIGREEN.NS',
+  'TATASTEEL':'TATASTEEL.NS','JSWSTEEL':'JSWSTEEL.NS','HINDALCO':'HINDALCO.NS',
+  'VEDL':'VEDL.NS','SAIL':'SAIL.NS',
+  'BHARTIARTL':'BHARTIARTL.NS','IDEA':'IDEA.NS',
+  'DLF':'DLF.NS','GODREJPROP':'GODREJPROP.NS','OBEROIRLTY':'OBEROIRLTY.NS',
+  'LT':'LT.NS','ULTRACEMCO':'ULTRACEMCO.NS','ACC':'ACC.NS',
+};
+
+// Reverse map: YF symbol → our symbol
+window.YF_REV = {};
+Object.entries(window.YF_SYMBOLS).forEach(([k,v]) => { window.YF_REV[v] = k; });
+// Handle M&M encoded form
+window.YF_REV['M&M.NS'] = 'M&M';
+
+window.fetchYFQuotes = async function() {
+  const syms = Object.values(window.YF_SYMBOLS).join(',');
+  const yfUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${syms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketPreviousClose`;
+
+  const attempts = [
+    yfUrl,
+    `https://corsproxy.io/?${encodeURIComponent(yfUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yfUrl)}`,
+  ];
+
+  for (const url of attempts) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const results = (data?.quoteResponse?.result) || [];
+      if (!results.length) continue;
+      const prices = {};
+      results.forEach(q => {
+        const ourSym = window.YF_REV[q.symbol];
+        if (!ourSym) return;
+        if (q.regularMarketPrice == null) return;
+        prices[ourSym] = {
+          ltp:      q.regularMarketPrice,
+          chg:      q.regularMarketChange || 0,
+          pct:      q.regularMarketChangePercent || 0,
+          basePrice: q.regularMarketPreviousClose || q.regularMarketPrice,
+        };
+      });
+      if (Object.keys(prices).length > 0) return prices;
+    } catch(_) { continue; }
+  }
+  return null;
+};
+
   </script>
 
   <!-- Tweaks panel -->
@@ -1273,7 +1336,7 @@ const NAV = [
   { id:'watchlist', label:'Watchlist',        icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.7 3.5 3.8.55-2.75 2.68.65 3.77L8 10.6l-3.4 1.9.65-3.77L2.5 6.05l3.8-.55L8 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg> },
 ];
 
-function Sidebar({ page, setPage, credits, portfolio, livePrices, openOrders }) {
+function Sidebar({ page, setPage, credits, portfolio, livePrices, openOrders, liveDataStatus }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -1290,6 +1353,20 @@ function Sidebar({ page, setPage, credits, portfolio, livePrices, openOrders }) 
           <span className="market-dot pulse"></span>
           NSE OPEN
         </div>
+        {liveDataStatus === 'live' && (
+          <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:5,
+            padding:'2px 8px',borderRadius:20,fontSize:10,fontWeight:700,
+            background:'rgba(64,112,255,.15)',color:'var(--accent)',letterSpacing:'.4px'}}>
+            ● LIVE DATA
+          </div>
+        )}
+        {liveDataStatus === 'error' && (
+          <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:5,
+            padding:'2px 8px',borderRadius:20,fontSize:10,fontWeight:600,
+            background:'rgba(255,183,0,.12)',color:'var(--yellow)',letterSpacing:'.4px'}}>
+            ⚠ SIMULATED
+          </div>
+        )}
       </div>
 
       <nav className="sidebar-nav">
@@ -2904,7 +2981,33 @@ function App() {
     document.documentElement.style.setProperty('--accent', t.accent);
   }, [t.accent]);
 
-  // Live price simulation
+  const [liveDataStatus, setLiveDataStatus] = useState('loading'); // 'loading' | 'live' | 'error'
+
+  // Real price feed from Yahoo Finance — refreshes every 60s
+  useEffect(() => {
+    let cancelled = false;
+    async function update() {
+      const realPrices = await window.fetchYFQuotes();
+      if (cancelled) return;
+      if (realPrices && Object.keys(realPrices).length > 5) {
+        setLivePrices(prev => {
+          const next = { ...prev };
+          Object.entries(realPrices).forEach(([sym, p]) => {
+            if (next[sym]) next[sym] = { ...next[sym], ...p };
+          });
+          return next;
+        });
+        setLiveDataStatus('live');
+      } else {
+        setLiveDataStatus('error');
+      }
+    }
+    update();
+    const id = setInterval(update, 60000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  // Simulated tick between real fetches (keeps prices feeling live)
   useEffect(() => {
     const interval = setInterval(() => {
       setLivePrices(prev => {
@@ -3010,7 +3113,7 @@ function App() {
       <Sidebar
         page={page} setPage={setPage} credits={credits}
         portfolio={portfolio} livePrices={livePrices}
-        openOrders={openOrderCount}
+        openOrders={openOrderCount} liveDataStatus={liveDataStatus}
       />
       <div className="main">
         <Topbar livePrices={livePrices} page={page} navigate={navigate} />
