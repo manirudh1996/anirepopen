@@ -9,7 +9,6 @@ app = Flask(__name__)
 CORS(app)
 logging.basicConfig(level=logging.INFO)
 
-# NSE symbol map: yfinance symbol → our app symbol
 SYMBOLS = {
     'TCS.NS':'TCS', 'INFY.NS':'INFY', 'WIPRO.NS':'WIPRO',
     'HCLTECH.NS':'HCLTECH', 'TECHM.NS':'TECHM', 'LTIM.NS':'LTIM',
@@ -33,37 +32,74 @@ SYMBOLS = {
     'LT.NS':'LT', 'ULTRACEMCO.NS':'ULTRACEMCO', 'ACC.NS':'ACC',
 }
 
-# Simple in-memory cache (30 second TTL)
 _cache = {'data': {}, 'ts': 0}
 _lock  = threading.Lock()
-CACHE_TTL = 30
+CACHE_TTL = 60
 
 
 def fetch_quotes():
     yf_syms = list(SYMBOLS.keys())
     result  = {}
     try:
-        tickers = yf.Tickers(' '.join(yf_syms))
+        app.logger.info(f"Downloading {len(yf_syms)} symbols via yf.download...")
+        df = yf.download(
+            tickers   = yf_syms,
+            period    = '5d',
+            interval  = '1d',
+            progress  = False,
+            auto_adjust = True,
+            group_by  = 'ticker',
+        )
+        app.logger.info(f"Download complete, shape: {df.shape}")
+
         for yf_sym, our_sym in SYMBOLS.items():
             try:
-                fi   = tickers.tickers[yf_sym].fast_info
-                ltp  = float(fi.last_price  or 0)
-                prev = float(fi.previous_close or ltp)
-                if ltp <= 0:
+                # Multi-ticker download nests columns under ticker symbol
+                close = df[yf_sym]['Close'] if yf_sym in df.columns.get_level_values(0) else None
+                if close is None or close.dropna().empty:
                     continue
-                chg = ltp - prev
+                close = close.dropna()
+                today = float(close.iloc[-1])
+                prev  = float(close.iloc[-2]) if len(close) >= 2 else today
+                if today <= 0:
+                    continue
+                chg = today - prev
                 pct = (chg / prev * 100) if prev else 0
                 result[our_sym] = {
-                    'ltp':       round(ltp,  2),
-                    'chg':       round(chg,  2),
-                    'pct':       round(pct,  2),
-                    'basePrice': round(prev, 2),
+                    'ltp':       round(today, 2),
+                    'chg':       round(chg,   2),
+                    'pct':       round(pct,   2),
+                    'basePrice': round(prev,   2),
+                }
+            except Exception as e:
+                app.logger.warning(f"Skip {yf_sym}: {e}")
+
+        app.logger.info(f"Fetched {len(result)}/{len(SYMBOLS)} quotes successfully")
+    except Exception as e:
+        app.logger.error(f"yf.download error: {e}")
+
+    # If batch download failed, try individual tickers as fallback
+    if not result:
+        app.logger.info("Batch failed — trying individual ticker fallback...")
+        for yf_sym, our_sym in SYMBOLS.items():
+            try:
+                hist = yf.Ticker(yf_sym).history(period='5d')
+                if hist.empty:
+                    continue
+                today = float(hist['Close'].iloc[-1])
+                prev  = float(hist['Close'].iloc[-2]) if len(hist) >= 2 else today
+                chg   = today - prev
+                pct   = (chg / prev * 100) if prev else 0
+                result[our_sym] = {
+                    'ltp':       round(today, 2),
+                    'chg':       round(chg,   2),
+                    'pct':       round(pct,   2),
+                    'basePrice': round(prev,   2),
                 }
             except Exception:
                 pass
-        app.logger.info(f"Fetched {len(result)}/{len(SYMBOLS)} quotes")
-    except Exception as e:
-        app.logger.error(f"yfinance batch error: {e}")
+        app.logger.info(f"Individual fallback got {len(result)} quotes")
+
     return result
 
 
@@ -82,9 +118,10 @@ def quotes():
 @app.route('/health')
 def health():
     return jsonify({
-        'status':  'ok',
-        'symbols': len(_cache['data']),
-        'age_sec': round(time.time() - _cache['ts'], 1),
+        'status':   'ok',
+        'symbols':  len(_cache['data']),
+        'age_sec':  round(time.time() - _cache['ts'], 1),
+        'sample':   dict(list(_cache['data'].items())[:3]) if _cache['data'] else {},
     })
 
 
