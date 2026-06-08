@@ -4,6 +4,7 @@ import requests
 import time
 import threading
 import logging
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -32,10 +33,10 @@ SYMBOLS = {
     'LT.NS':'LT', 'ULTRACEMCO.NS':'ULTRACEMCO', 'ACC.NS':'ACC',
 }
 
-HEADERS = {
+PAGE_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Language': 'en-US,en;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br',
     'Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1',
@@ -44,68 +45,120 @@ HEADERS = {
 API_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
     'Accept': 'application/json',
-    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Language': 'en-US,en;q=0.9',
     'Referer': 'https://finance.yahoo.com/',
 }
 
 _session = requests.Session()
+
+# Crumb state — only refresh at most once per 10 minutes
 _crumb = None
 _crumb_lock = threading.Lock()
-_cache = {'data': {}, 'ts': 0, 'last_error': '', 'crumb': ''}
+_crumb_last_attempt = 0
+_CRUMB_RETRY_INTERVAL = 600  # 10 minutes
+
+_cache = {'data': {}, 'ts': 0, 'last_error': '', 'crumb_src': ''}
 _lock = threading.Lock()
-CACHE_TTL = 60
+CACHE_TTL = 90
+
+
+def _extract_crumb_from_html(html: str):
+    """Pull the crumb string out of Yahoo Finance page HTML."""
+    for pattern in [
+        r'"crumb"\s*:\s*"([A-Za-z0-9/_.-]{5,20})"',
+        r'"CrumbStore"\s*:\s*\{"crumb"\s*:\s*"([^"]+)"',
+    ]:
+        m = re.search(pattern, html)
+        if m:
+            return m.group(1).replace('\\u002F', '/')
+    return None
 
 
 def refresh_crumb():
-    global _crumb
+    global _crumb, _crumb_last_attempt
+
+    with _crumb_lock:
+        now = time.time()
+        if now - _crumb_last_attempt < _CRUMB_RETRY_INTERVAL:
+            app.logger.info(f"Crumb: skipping refresh (last attempt {now - _crumb_last_attempt:.0f}s ago)")
+            return bool(_crumb)
+        _crumb_last_attempt = now
+
+    crumb_src = ''
+    new_crumb = None
+
     try:
-        app.logger.info("Fetching Yahoo Finance page for cookies...")
-        r1 = _session.get('https://finance.yahoo.com', headers=HEADERS, timeout=20)
-        app.logger.info(f"YF homepage: status={r1.status_code}, cookies={list(_session.cookies.keys())}")
-        time.sleep(2)
+        # Step 1: consent/fc page sets initial cookies
+        try:
+            _session.get('https://fc.yahoo.com', headers=PAGE_HEADERS, timeout=10)
+            time.sleep(2)
+        except Exception:
+            pass
 
-        app.logger.info("Fetching crumb...")
-        r2 = _session.get(
-            'https://query1.finance.yahoo.com/v1/test/getcrumb',
-            headers=API_HEADERS,
-            timeout=20,
-        )
-        app.logger.info(f"Crumb response: status={r2.status_code}, body={r2.text[:100]!r}")
+        # Step 2: main Yahoo Finance page — also try to parse crumb from HTML
+        app.logger.info("Fetching YF homepage for cookies + HTML crumb...")
+        resp = _session.get('https://finance.yahoo.com', headers=PAGE_HEADERS, timeout=20)
+        app.logger.info(f"YF homepage: {resp.status_code}, cookies={list(_session.cookies.keys())}")
 
-        if r2.status_code == 200 and r2.text.strip():
-            with _crumb_lock:
-                _crumb = r2.text.strip()
-            app.logger.info(f"Crumb acquired: {_crumb!r}")
-            with _lock:
-                _cache['crumb'] = _crumb
-            return True
-        else:
-            app.logger.warning(f"Crumb fetch failed: status={r2.status_code} body={r2.text[:200]!r}")
+        if resp.status_code == 200:
+            new_crumb = _extract_crumb_from_html(resp.text)
+            if new_crumb:
+                crumb_src = 'html'
+                app.logger.info(f"Crumb from HTML: {new_crumb!r}")
+
+        # Step 3: if HTML parse failed, try the crumb API endpoint (query2 first, then query1)
+        if not new_crumb:
+            time.sleep(4)
+            for base in ['https://query2.finance.yahoo.com', 'https://query1.finance.yahoo.com']:
+                try:
+                    r = _session.get(f'{base}/v1/test/getcrumb', headers=API_HEADERS, timeout=15)
+                    app.logger.info(f"Crumb API {base}: {r.status_code} {r.text[:60]!r}")
+                    if r.status_code == 200 and r.text.strip():
+                        new_crumb = r.text.strip()
+                        crumb_src = base
+                        break
+                    elif r.status_code == 429:
+                        app.logger.warning("Crumb API 429 — rate limited, will rely on HTML method only")
+                        break
+                except Exception as e:
+                    app.logger.warning(f"Crumb API {base}: {e}")
+
     except Exception as e:
         app.logger.error(f"refresh_crumb error: {e}")
+
+    if new_crumb:
+        with _crumb_lock:
+            _crumb = new_crumb
+        with _lock:
+            _cache['crumb_src'] = crumb_src
+        app.logger.info(f"Crumb set ({crumb_src}): {new_crumb!r}")
+        return True
+
+    app.logger.warning("refresh_crumb: no crumb obtained")
     return False
 
 
 def fetch_quotes():
     global _crumb
+
     with _crumb_lock:
         crumb = _crumb
 
     yf_syms = list(SYMBOLS.keys())
     result = {}
-    batch_size = 20
     last_error = ''
+    need_crumb_refresh = False
 
-    for i in range(0, len(yf_syms), batch_size):
-        batch = yf_syms[i:i + batch_size]
-        symbols_str = ','.join(batch)
+    for i in range(0, len(yf_syms), 20):
+        batch = yf_syms[i:i + 20]
         success = False
 
         for base in ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com']:
             try:
                 params = {
-                    'symbols': symbols_str,
-                    'fields': 'regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketPreviousClose',
+                    'symbols': ','.join(batch),
+                    'fields': 'regularMarketPrice,regularMarketChange,'
+                              'regularMarketChangePercent,regularMarketPreviousClose',
                 }
                 if crumb:
                     params['crumb'] = crumb
@@ -116,29 +169,21 @@ def fetch_quotes():
                     headers=API_HEADERS,
                     timeout=20,
                 )
-                app.logger.info(f"Batch {i//batch_size+1} {base}: status={resp.status_code}")
+                app.logger.info(f"Batch {i//20+1} {base}: {resp.status_code}")
 
                 if resp.status_code == 401:
-                    app.logger.warning("401 — crumb expired, refreshing")
-                    if refresh_crumb():
-                        with _crumb_lock:
-                            crumb = _crumb
-                        params['crumb'] = crumb
-                        resp = _session.get(
-                            f'{base}/v7/finance/quote',
-                            params=params,
-                            headers=API_HEADERS,
-                            timeout=20,
-                        )
+                    app.logger.warning("401 — crumb invalid, scheduling refresh")
+                    need_crumb_refresh = True
+                    last_error = f"401 Unauthorized (crumb={crumb!r})"
+                    continue
 
                 if resp.status_code != 200:
                     last_error = f"HTTP {resp.status_code}: {resp.text[:200]}"
-                    app.logger.warning(f"Batch {i//batch_size+1} {base}: {last_error}")
+                    app.logger.warning(f"Batch {i//20+1} {base}: {last_error}")
                     continue
 
-                body = resp.json()
-                quotes = body.get('quoteResponse', {}).get('result', [])
-                app.logger.info(f"Batch {i//batch_size+1}: got {len(quotes)} quotes")
+                quotes = resp.json().get('quoteResponse', {}).get('result', [])
+                app.logger.info(f"Batch {i//20+1}: {len(quotes)} quotes")
 
                 for q in quotes:
                     our_sym = SYMBOLS.get(q.get('symbol', ''))
@@ -157,32 +202,40 @@ def fetch_quotes():
                         }
                 success = True
                 break
+
             except Exception as e:
                 last_error = str(e)
-                app.logger.warning(f"Batch {i//batch_size+1} {base} exception: {e}")
+                app.logger.warning(f"Batch {i//20+1} {base} exception: {e}")
 
         if not success:
-            app.logger.error(f"Batch {i//batch_size+1} failed all attempts. Last error: {last_error}")
+            app.logger.error(f"Batch {i//20+1} failed all bases. Last error: {last_error}")
 
-    app.logger.info(f"Total: {len(result)}/{len(SYMBOLS)} quotes fetched")
-    if last_error and not result:
+    app.logger.info(f"Total: {len(result)}/{len(SYMBOLS)} quotes")
+
+    if need_crumb_refresh:
+        with _crumb_lock:
+            _crumb = None  # force next refresh_crumb call to proceed
+            _crumb_last_attempt = 0
+
+    if last_error:
         with _lock:
             _cache['last_error'] = last_error
+
     return result
 
 
 def background_refresh():
-    time.sleep(3)
-    # Acquire crumb on startup
-    app.logger.info("Background thread: acquiring initial crumb...")
-    for attempt in range(3):
-        if refresh_crumb():
-            break
-        app.logger.warning(f"Crumb attempt {attempt+1}/3 failed, retrying in 10s")
-        time.sleep(10)
+    time.sleep(5)
+
+    app.logger.info("Background: initial crumb fetch...")
+    refresh_crumb()
 
     while True:
         try:
+            # If no crumb, try to get one (throttled inside refresh_crumb)
+            if not _crumb:
+                refresh_crumb()
+
             data = fetch_quotes()
             if data:
                 with _lock:
@@ -190,13 +243,12 @@ def background_refresh():
                     _cache['ts']   = time.time()
                     _cache['last_error'] = ''
             else:
-                app.logger.warning("fetch_quotes returned empty — will retry next cycle")
-                # Try refreshing crumb in case it expired
-                refresh_crumb()
+                app.logger.warning("fetch_quotes returned empty")
         except Exception as e:
-            app.logger.error(f"Background refresh error: {e}")
+            app.logger.error(f"Background error: {e}")
             with _lock:
                 _cache['last_error'] = str(e)
+
         time.sleep(CACHE_TTL)
 
 
@@ -213,23 +265,31 @@ def quotes():
 @app.route('/health')
 def health():
     with _lock:
+        age = round(time.time() - _cache['ts'], 1) if _cache['ts'] else None
         return jsonify({
             'status':     'ok',
             'symbols':    len(_cache['data']),
-            'age_sec':    round(time.time() - _cache['ts'], 1) if _cache['ts'] else None,
+            'age_sec':    age,
+            'crumb':      bool(_crumb),
+            'crumb_src':  _cache['crumb_src'],
             'last_error': _cache['last_error'],
-            'crumb':      bool(_cache['crumb']),
             'sample':     dict(list(_cache['data'].items())[:3]),
         })
 
 
 @app.route('/debug')
 def debug():
-    """One-shot fetch of a single symbol for live diagnosis."""
-    global _crumb
-    info = {'crumb_present': bool(_crumb), 'cookies': list(_session.cookies.keys())}
+    """Live single-symbol test to diagnose Yahoo Finance connectivity."""
+    info = {
+        'crumb_present': bool(_crumb),
+        'crumb_value':   _crumb,
+        'cookies':       list(_session.cookies.keys()),
+    }
     try:
-        params = {'symbols': 'TCS.NS', 'fields': 'regularMarketPrice,regularMarketPreviousClose'}
+        params = {
+            'symbols': 'TCS.NS',
+            'fields':  'regularMarketPrice,regularMarketPreviousClose',
+        }
         if _crumb:
             params['crumb'] = _crumb
         resp = _session.get(
@@ -239,7 +299,7 @@ def debug():
             timeout=15,
         )
         info['status_code'] = resp.status_code
-        info['response_preview'] = resp.text[:500]
+        info['response'] = resp.text[:600]
     except Exception as e:
         info['error'] = str(e)
     return jsonify(info)
