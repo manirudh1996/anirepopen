@@ -754,7 +754,19 @@ Object.entries(window.YF_SYMBOLS).forEach(([k,v]) => { window.YF_REV[v] = k; });
 // Handle M&M encoded form
 window.YF_REV['M&M.NS'] = 'M&M';
 
+window.RENDER_API = 'https://bazaar-api-wey5.onrender.com';
+
 window.fetchYFQuotes = async function() {
+  // 1. Try Render yfinance backend first (most reliable)
+  try {
+    const res = await fetch(window.RENDER_API + '/quotes', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Object.keys(data).length > 5) return data;
+    }
+  } catch(_) {}
+
+  // 2. Fall back to Yahoo Finance direct + CORS proxies
   const syms = Object.values(window.YF_SYMBOLS).join(',');
   const yfUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${syms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketPreviousClose`;
 
@@ -777,9 +789,9 @@ window.fetchYFQuotes = async function() {
         if (!ourSym) return;
         if (q.regularMarketPrice == null) return;
         prices[ourSym] = {
-          ltp:      q.regularMarketPrice,
-          chg:      q.regularMarketChange || 0,
-          pct:      q.regularMarketChangePercent || 0,
+          ltp:       q.regularMarketPrice,
+          chg:       q.regularMarketChange || 0,
+          pct:       q.regularMarketChangePercent || 0,
           basePrice: q.regularMarketPreviousClose || q.regularMarketPrice,
         };
       });
